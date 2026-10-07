@@ -1,6 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ALPHABET, romanize, pokerEncode, pokerDecode, caesar, vigenere, railFence, randomDigits, digitMask, unicodeDigits, digitsUnicode, morseEncode, toBase64, fromBase64, utf8, hex, sha256, aesEncrypt, aesDecrypt, rsaKeys, rsaEncrypt, rsaDecrypt } from '../dist/ciphers.js';
+import { sentenceHands, HAND_WINDOW, handsSVG } from '../dist/hands.js';
+
+test('sentence hands keep commas and closing quotes together without losing code positions',()=>{
+  const data=pokerEncode('你好，世界。Hello, world! “OK?”\nNext\nlast');
+  const hands=sentenceHands(data.cards);
+  assert.deepEqual(hands.map(h=>h.map(c=>c.char).join('').trim()),['NI HAO,SHI JIE.','HELLO, WORLD!','“OK?”','NEXT','LAST']);
+  assert.deepEqual(hands.flat(),data.cards);
+  assert.equal(pokerDecode(hands.flat().map(c=>c.token).join(' ')),data.normalized);
+  for(const text of ['', 'A... B?! C', ' \n\n', 'A\nB', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(20)]){
+    const result=pokerEncode(text);assert.deepEqual(sentenceHands(result.cards).flat(),result.cards);
+  }
+});
+
+test('fan export includes all long-sentence cards and safely escapes literal text',()=>{
+  const data=pokerEncode('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(3)+',.');
+  const svg=handsSVG(data.cards);
+  assert.equal(sentenceHands(data.cards).length,1);
+  assert.equal((svg.match(/rotate\(/g)||[]).length,data.cards.length);
+  assert.ok(svg.includes(`${HAND_WINDOW+1}–${HAND_WINDOW*2} / ${data.cards.length}`));
+  assert.ok(svg.includes('SMALL BIG'));
+  assert.ok(handsSVG(pokerEncode('<>&').cards).includes('&lt;'));
+  assert.ok(!handsSVG(pokerEncode('A').cards,{showLetters:false,diamond:true}).includes('>A</text><text x="6" y="49"'));
+  assert.ok(handsSVG(pokerEncode('A').cards,{diamond:true}).includes('♦'));
+});
 
 test('26 letters obey all red/black boundaries and both jokers',()=>{
   const {cards,serialized}=pokerEncode(ALPHABET+',.');

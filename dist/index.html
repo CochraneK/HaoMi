@@ -8,6 +8,7 @@
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./mobile.css">
+  <link rel="stylesheet" href="./hands.css">
   <script type="module" src="./app.js"></script>
 </head>
 <body>
@@ -63,7 +64,7 @@
   <div class="poker-workspace"><div class="poker-controls"><div class="segmented" role="group" aria-label="扑克转换方向"><button data-poker-mode="encode" class="active" aria-pressed="true">文字转扑克</button><button data-poker-mode="decode" aria-pressed="false">数字码解读</button></div><div class="poker-privacy">输入在当前浏览器内转换</div></div>
   <div class="poker-input-box"><label for="poker-input" id="poker-input-label">输入英文、中文，或两者混合</label><textarea id="poker-input" rows="2" maxlength="600">你好，世界。Hello, world.</textarea><div class="poker-input-footer"><div class="example-buttons"><span>试一句</span><button data-poker-example="山河无恙，岁月长安。">山河无恙</button><button data-poker-example="Hello, world.">Hello, world.</button><button data-poker-example="ABCDEFGHIJKLMNOPQRSTUVWXYZ,.">完整字母表</button></div><span id="poker-count" class="mono"></span></div></div>
   <div class="poker-transcription"><span id="poker-transcription-label">拼音 / 字母序列</span><span id="poker-normalized" class="mono"></span><button id="poker-edit" class="small-button">校正拼音</button></div><div id="pinyin-editor" class="pinyin-editor" hidden><label for="pinyin-input">直接修改下列字母序列（可校正姓名和多音字）</label><textarea id="pinyin-input" rows="2" maxlength="1800"></textarea><button id="pinyin-reset" class="small-button">恢复自动拼音</button></div>
-  <div class="cards-meta"><span>牌面序列</span><div><label class="switch-label"><input type="checkbox" id="show-letters" checked> 显示对应字母</label><label class="suit-label">花色<select id="suit-choice"><option value="heart">红桃 / 黑桃</option><option value="diamond">方块 / 梅花</option></select></label></div></div><div id="poker-cards" class="poker-cards" aria-label="扑克牌面序列"></div><button id="poker-more" class="small-button" hidden>展开全部牌面</button><p id="poker-status" class="poker-status" role="status"></p><p id="poker-error" class="error" role="alert" hidden></p>
+  <div class="cards-meta"><span>一句话，一把牌</span><div><label class="switch-label"><input type="checkbox" id="show-letters" checked> 显示对应字母</label><label class="suit-label">花色<select id="suit-choice"><option value="heart">红桃 / 黑桃</option><option value="diamond">方块 / 梅花</option></select></label></div></div><p class="hand-help">按句号、问号、叹号或换行分成手牌；点选牌面，或滑动逐张查看。长句在同一把手牌里翻看。</p><div id="poker-cards" class="poker-cards" aria-label="按句分组的扇形手牌"></div><button id="poker-more" class="small-button" hidden>展开全部牌面</button><p id="poker-status" class="poker-status" role="status"></p><p id="poker-error" class="error" role="alert" hidden></p>
   <div class="poker-code-header"><label for="poker-code">对应数字码 <small>R 红 · B 黑 · BIG 大王 · SMALL 小王</small></label><div class="output-actions"><button id="poker-copy">复制数字码</button><button id="poker-export">导出牌面 SVG</button></div></div><textarea id="poker-code" readonly class="code-output" rows="3"></textarea><p class="poker-note">空格用 /，换行用 NL。数字、问号等规则外字符保留为灰色原文标记（U+码点），未映射成扑克牌。中文先转无声调拼音，ü 写作 V；大小写和声调不保留。反向解码得到字母或拼音，不能唯一恢复汉字。花色只是显示选择，同色牌同值。</p></div>
   <details class="mapping-details"><summary>查看完整 26 字母对照表 <span>＋</span></summary><div id="poker-mapping" class="poker-mapping"></div></details>
 </div></section>

@@ -1,4 +1,5 @@
 import { ALPHABET, romanize, pokerEncode, pokerDecode, caesar, vigenere, railFence, randomDigits, digitMask, unicodeDigits, digitsUnicode, MORSE, morseEncode, toBase64, fromBase64, utf8, hex, sha256, aesEncrypt, aesDecrypt, rsaKeys, rsaEncrypt, rsaDecrypt } from './ciphers.js';
+import { HAND_WINDOW, sentenceHands, fanPosition, handsSVG } from './hands.js';
 const $ = id => document.getElementById(id);
 const E = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const short = (text, limit = 25) => [...text].length > limit ? [...text].slice(0,limit).join('') + '…' : text;
@@ -153,6 +154,44 @@ $('lab-audio').addEventListener('click',async()=>{
 chooseAlg('caesar');
 
 let pokerMode='encode',pokerManual=false,pokerExpanded=false,pokerResult={normalized:'',cards:[],serialized:''};
+let handSource='', pokerHands=[], handPages=new Map(), handSelections=new Map();
+const handCards = hand => hand.filter(c => c.kind !== 'space');
+function handCardName(card) {
+  return card.kind==='literal'?`原文 ${card.char}`:card.kind==='big'?'大王':card.kind==='small'?'小王':`${card.kind==='red'?'红':'黑'}牌 ${card.number}`;
+}
+function handDetail(card,index) {
+  return `第 ${index+1} 张 · ${card.token}${$('show-letters').checked?` → ${card.char}`:''}`;
+}
+function renderHand(hand,handIndex) {
+  const all=handCards(hand), page=handPages.get(handIndex)||0, start=page*HAND_WINDOW, visible=all.slice(start,start+HAND_WINDOW);
+  const selected=handSelections.get(handIndex)??start+Math.floor((visible.length-1)/2);
+  handSelections.set(handIndex,selected);
+  const show=$('show-letters').checked, diamond=$('suit-choice').value==='diamond';
+  return `<section class="sentence-hand" data-hand="${handIndex}" aria-label="第 ${handIndex+1} 句手牌"><div class="hand-heading"><span>第 ${String(handIndex+1).padStart(2,'0')} 句</span><span>${all.length} 张牌${all.some(c=>c.kind==='literal')?' / 含原文标记':''}</span></div><p class="hand-text">${E(hand.map(c=>c.char).join('').trim())}</p><div class="hand-stage">${visible.map((c,i)=>{
+    const {position,angle,drop}=fanPosition(i,visible.length), index=start+i;
+    return `<button type="button" class="hand-card" data-hand-card="${index}" aria-pressed="${index===selected}" aria-label="第 ${index+1} 张，${E(handCardName(c))}${show?`，对应 ${E(c.char)}`:''}" style="--fan-left:${50+position*50};--fan-inset:${position*126};--fan-drop:${drop};--fan-angle:${angle};--fan-order:${i+1}">${cardHTML(c,show,diamond)}<span class="hand-edge" aria-hidden="true">${show?E(c.char):'·'}<small>${c.number?String(c.number).padStart(2,'0'):c.kind==='literal'?'原文':c.kind==='big'?'大王':'小王'}</small></span></button>`;
+  }).join('')}</div><div class="hand-reader"><label>逐张查看<input type="range" data-hand-reader min="${start}" max="${start+visible.length-1}" value="${selected}" aria-label="查看第 ${handIndex+1} 句的牌" aria-valuetext="${E(handDetail(all[selected],selected))}"></label><output class="hand-detail" aria-live="polite">${E(handDetail(all[selected],selected))}</output></div>${all.length>HAND_WINDOW?`<div class="hand-navigation"><button type="button" data-hand-page="${page-1}" ${page===0?'disabled':''}>前 ${HAND_WINDOW} 张</button><span>${start+1}–${start+visible.length} / ${all.length}</span><button type="button" data-hand-page="${page+1}" ${start+visible.length===all.length?'disabled':''}>后 ${HAND_WINDOW} 张</button></div>`:''}</section>`;
+}
+function renderHands() {
+  const visible=pokerExpanded?pokerHands:pokerHands.slice(0,6);
+  $('poker-cards').innerHTML=visible.length?visible.map(renderHand).join(''):'<p class="empty-state">写下一句话，手牌会在这里出现。</p>';
+}
+function selectHandCard(section,index) {
+  const handIndex=Number(section.dataset.hand), card=handCards(pokerHands[handIndex])[index];
+  handSelections.set(handIndex,index);
+  section.querySelectorAll('[data-hand-card]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.handCard)===index)));
+  const reader=section.querySelector('[data-hand-reader]'), detail=handDetail(card,index);
+  reader.value=index;reader.setAttribute('aria-valuetext',detail);section.querySelector('.hand-detail').textContent=detail;
+}
+$('poker-cards').addEventListener('click',e=>{
+  const section=e.target.closest('[data-hand]');if(!section)return;
+  const card=e.target.closest('[data-hand-card]');if(card)return selectHandCard(section,Number(card.dataset.handCard));
+  const page=e.target.closest('[data-hand-page]');if(!page)return;
+  const index=Number(section.dataset.hand), next=Number(page.dataset.handPage);
+  handPages.set(index,next);handSelections.set(index,next*HAND_WINDOW);section.outerHTML=renderHand(pokerHands[index],index);
+  $('poker-cards').querySelector(`[data-hand="${index}"] [data-hand-reader]`).focus();
+});
+$('poker-cards').addEventListener('input',e=>{if(e.target.matches('[data-hand-reader]'))selectHandCard(e.target.closest('[data-hand]'),Number(e.target.value));});
 function renderPoker(){
   $('poker-error').hidden=true;
   const text=$('poker-input').value;
@@ -165,9 +204,10 @@ function renderPoker(){
       if(!pokerManual)$('pinyin-input').value=pokerResult.normalized;
     }
     const {cards,serialized}=pokerResult;const count=cards.filter(c=>c.kind!=='space'&&c.kind!=='literal').length,literals=cards.filter(c=>c.kind==='literal').length;
-    $('poker-cards').innerHTML=cards.length?(pokerExpanded?cards:cards.slice(0,180)).map(c=>cardHTML(c,$('show-letters').checked,$('suit-choice').value==='diamond')).join(''):'<p class="empty-state">写下一句话，牌面会在这里出现。</p>';
-    $('poker-more').hidden=cards.length<=180||pokerExpanded;$('poker-more').textContent=`展开全部 ${cards.length} 个位置`;
-    $('poker-status').textContent=cards.length?`${count} 张牌 · ${literals} 个规则外字符保留${cards.length>180&&!pokerExpanded?' · 当前显示前 180 个位置；数字码包含完整序列':''}${pokerManual?' · 正在使用校正后的字母序列':''}`:'';
+    if(handSource!==serialized){handSource=serialized;handPages.clear();handSelections.clear();}
+    pokerHands=sentenceHands(cards).filter(hand=>handCards(hand).length);renderHands();
+    $('poker-more').hidden=pokerHands.length<=6||pokerExpanded;$('poker-more').textContent=`展开全部 ${pokerHands.length} 把手牌`;
+    $('poker-status').textContent=cards.length?`${pokerHands.length} 把手牌 · ${count} 张牌 · ${literals} 个规则外字符保留${pokerHands.length>6&&!pokerExpanded?' · 当前显示前 6 句；数字码包含完整序列':''}${pokerManual?' · 正在使用校正后的字母序列':''}`:'';
     $('poker-code').value=serialized;$('poker-copy').disabled=!serialized;$('poker-export').disabled=!cards.length;
   }catch(error){pokerResult={normalized:'',cards:[],serialized:''};$('poker-normalized').textContent='';$('poker-cards').innerHTML='';$('poker-code').value='';$('poker-status').textContent='';$('poker-more').hidden=true;$('poker-error').textContent=error.message;$('poker-error').hidden=false;$('poker-copy').disabled=true;$('poker-export').disabled=true;}
 }
@@ -193,15 +233,7 @@ $('poker-copy').addEventListener('click',()=>copy(pokerResult.serialized));
 $('poker-mapping').innerHTML=[...ALPHABET].map((c,i)=>`<div class="mapping-cell ${i<13?'red':'black'}"><strong>${c}</strong><small>${i<13?'♥':'♠'} ${i%13+1}</small></div>`).join('');
 $('poker-export').addEventListener('click',()=>{
   const cards=pokerResult.cards;if(!cards.length)return;
-  const columns=13,cellW=78,cellH=124,padding=32,width=columns*cellW+2*padding,height=Math.ceil(cards.length/columns)*cellH+140;
-  const diamond=$('suit-choice').value==='diamond';
-  const shapes=cards.map((c,i)=>{
-    const x=padding+(i%columns)*cellW,y=105+Math.floor(i/columns)*cellH;
-    if(c.kind==='space')return `<text x="${x+32}" y="${y+57}" text-anchor="middle" fill="#909985" font-size="18">${c.token==='NL'?'↵':'·'}</text>`;
-    const literal=c.kind==='literal',joker=['big','small'].includes(c.kind),red=['red','big'].includes(c.kind),color=literal?'#767d6e':red?'#b84131':'#202522';
-    return `<g transform="translate(${x},${y})"><rect width="64" height="104" rx="5" fill="${literal?'#e5e9dd':'#fffefa'}" stroke="#c5ceba"/><text x="8" y="21" fill="${color}" font-size="14" font-family="monospace">${literal?'原文':joker?'JOKER':rank(c.number)}</text><text x="32" y="61" text-anchor="middle" fill="${color}" font-size="${joker?21:30}">${literal?E(c.char):joker?(c.kind==='big'?'大王':'小王'):c.kind==='red'?(diamond?'♦':'♥'):(diamond?'♣':'♠')}</text><path d="M0 79H64" stroke="#e0e5d6"/><text x="9" y="96" fill="${color}" font-size="13" font-family="monospace">${$('show-letters').checked||literal?E(c.char):''}</text><text x="56" y="96" text-anchor="end" fill="#737f63" font-size="12" font-family="monospace">${c.number||''}</text></g>`;
-  }).join('');
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="#f5f3ed"/><text x="32" y="43" font-size="24" fill="#202522" font-family="serif">豪密 · 扑克密语</text><text x="32" y="72" font-size="13" fill="#737f63">红牌 1–13 = A–M / 黑牌 1–13 = N–Z / 大王 = 句号 / 小王 = 逗号</text>${shapes}<text x="32" y="${height-15}" font-size="11" fill="#737f63">中文转无声调拼音 · 灰色为规则外原文标记 · 不保留大小写和声调</text></svg>`;
+  const svg=handsSVG(cards,{showLetters:$('show-letters').checked,diamond:$('suit-choice').value==='diamond'});
   const blob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='扑克密语.svg';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('牌面已导出为 SVG');
 });
 renderPoker();

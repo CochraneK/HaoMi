@@ -1,0 +1,48 @@
+.poker-cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 8px 0 20px; }
+.sentence-hand { min-width: 0; padding: 22px 24px 18px; background: #f0f2e9; border: 1px solid #d8ddce; border-radius: 12px; }
+.hand-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; }
+.hand-heading span:first-child { color: var(--red); letter-spacing: .12em; }
+.hand-text { margin: 10px 0 0; font: 16px/1.8 var(--mono); overflow-wrap: anywhere; white-space: pre-wrap; color: #546247; }
+.hand-stage { position: relative; max-width: 660px; height: 222px; margin: 0 auto; isolation: isolate; }
+.hand-stage::after { content: ''; position: absolute; width: 86px; height: 8px; border-radius: 50%; background: #28392015; bottom: 17px; left: calc(50% - 43px); filter: blur(5px); }
+.hand-card { position: absolute; left: calc(var(--fan-left) * 1% - var(--fan-inset) * 1px); top: calc(46px + var(--fan-drop) * 1px); width: 68px; height: 116px; padding: 0; background: none; border: 0; border-radius: 6px; transform: translateX(-50%) rotate(calc(var(--fan-angle) * 1deg)); transform-origin: 50% 175%; z-index: var(--fan-order); transition: transform .2s, filter .2s; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.hand-card .playing-card, .hand-card .literal-card { width: 100%; height: 100%; min-height: 0; box-shadow: -3px 2px 7px #20252218; border-radius: 6px; transform: none; }
+.hand-card .card-corner { left: 6px; top: 7px; font-size: 14px; }
+.hand-card .joker .card-corner { writing-mode: horizontal-tb; font-size: 8px; }
+.hand-card .card-suit { padding: 40px 4px 12px; font-size: 31px; }
+.hand-card .joker .card-suit { font-size: 18px; }
+.hand-card .card-footer { font-size: 14px; padding: 5px 7px; }
+.hand-card .card-number { font-size: 12px; }
+.hand-card .literal-card strong { padding-top: 32px; }
+.hand-edge { position: absolute; top: 27px; left: 6px; font: 11px/1.25 var(--mono); display: flex; flex-direction: column; gap: 2px; text-align: left; color: var(--ink); }
+.hand-card:has(.red) .hand-edge, .hand-card:has(.big) .hand-edge { color: var(--red); }
+.hand-edge small { font-size: 9px; }
+.hand-card:hover, .hand-card:focus-visible { transform: translateX(-50%) translateY(-20px) rotate(calc(var(--fan-angle) * 1deg)); z-index: 100; }
+.hand-card[aria-pressed=true] { transform: translateX(-50%) translateY(-24px) rotate(calc(var(--fan-angle) * 1deg)); z-index: 99; }
+.hand-card[aria-pressed=true] .playing-card, .hand-card[aria-pressed=true] .literal-card { border-color: #849174; box-shadow: -3px 4px 12px #20252224; }
+.hand-card:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+.hand-reader { max-width: 480px; margin: 0 auto; display: flex; align-items: center; gap: 18px; }
+.hand-reader label { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.hand-reader input { min-width: 0; width: 100%; flex: 1; min-height: 44px; accent-color: #667552; }
+.hand-detail { min-width: 150px; font: 12px/1.8 var(--mono); color: #546247; text-align: right; }
+.hand-navigation { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+.hand-navigation button { min-height: 44px; padding: 8px 14px; background: #fbfcf7; border: 1px solid #cbd3bf; border-radius: 4px; }
+.hand-navigation button:disabled { opacity: .4; cursor: default; }
+.hand-help { font-size: 12px; color: var(--muted); margin: -5px 0 15px; line-height: 1.8; }
+@media (max-width: 600px) {
+  .sentence-hand { padding: 18px 10px 12px; border-radius: 9px; }
+  .hand-heading { font-size: 12px; }
+  .hand-text { font-size: 14px; }
+  .hand-stage { height: 212px; }
+  .hand-card { width: 58px; height: 108px; }
+  .hand-card .card-corner { font-size: 13px; }
+  .hand-card .card-suit { font-size: 28px; }
+  .hand-card .card-footer { padding: 5px; }
+  .hand-reader { flex-direction: column-reverse; gap: 0; }
+  .hand-reader label { width: 100%; font-size: 13px; }
+  .hand-detail { width: 100%; min-width: 0; text-align: center; font-size: 13px; }
+  .hand-navigation { gap: 8px; justify-content: space-between; }
+  .hand-navigation button { font-size: 13px; padding: 8px 10px; }
+  .hand-help { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) { .hand-card { transition: none; } }

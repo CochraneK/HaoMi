@@ -29,11 +29,14 @@ npm run dev
 | --- | --- |
 | `dist/index.html` | 页面结构与展览内容 |
 | `dist/style.css` | 档案馆视觉风格与响应式布局 |
+| `dist/mobile.css` | 手机布局与触控控件 |
+| `dist/hands.css` | 扇形手牌与点选效果 |
+| `dist/hands.js` | 按句分组、手牌几何与扇形 SVG 导出 |
 | `dist/app.js` | 页面交互、可视化与 SVG 导出 |
 | `dist/ciphers.js` | 字符映射、经典算法与 Web Crypto 封装 |
 | `dist/vendor.js` | 本地打包的 pinyin-pro 字典 |
 | `dist/vendor.LICENSE.txt` | pinyin-pro MIT 授权声明 |
-| `tests/crypto.test.mjs` | 10 项算法、Unicode 与边界验证 |
+| `tests/crypto.test.mjs` | 12 项算法、Unicode、手牌分组与导出验证 |
 | `.openai/hosting.json` | 静态发布配置 |
 | `.github/workflows/pages.yml` | GitHub Pages 自动构建、验证与发布 |
 
@@ -49,4 +52,4 @@ AES 使用 256 位密钥、96 位随机 IV、128 位认证标签。RSA 使用 20
 
 扑克映射为固定替换编码：`R01–R13` 对应 A–M，`B01–B13` 对应 N–Z，`BIG` 对应句号，`SMALL` 对应逗号。`/` 与 `NL` 是间隔标记，`U+码点` 是规则外原文保留标记。
 
-牌面输出超过 180 个位置时先折叠显示，数字码和 SVG 导出仍使用完整序列。
+牌面按句号、问号、叹号或换行分成扇形手牌，逗号留在同一句内。点选牌面或滑动“逐张查看”可抬起单张牌。长句在同一把手牌里每次翻看 24 张；超过 6 句时先折叠显示，数字码和 SVG 导出始终包含完整序列。空格仍保留在数字码与句子文字中。
