@@ -1,0 +1,13 @@
+{
+  "name": "haomi-exhibit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/vendor.js --bundle --format=esm --minify --outfile=dist/vendor.js",
+    "test": "node --test tests/crypto.test.mjs",
+    "dev": "node scripts/serve.mjs"
+  },
+  "dependencies": { "pinyin-pro": "3.28.0" },
+  "devDependencies": { "esbuild": "0.25.10" }
+}
