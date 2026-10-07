@@ -1,0 +1,216 @@
+/* Keep wide-screen styling intact; reflow the exhibit for touch screens. */
+@media (max-width: 900px) {
+  .hero-grid,
+  .archive-grid,
+  .book-model,
+  .lab-layout,
+  .sources-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-grid > *,
+  .section-heading > *,
+  .archive-grid > *,
+  .book-model > *,
+  .sources-grid > * {
+    min-width: 0;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .hero-demo { max-width: 560px; width: 100%; }
+  .book-model { gap: 16px; }
+  .lab-menu {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid var(--line);
+  }
+  .menu-caption, .lab-menu button small { display: none; }
+  .lab-menu button {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    justify-content: flex-start;
+    padding: 10px;
+    font-size: 14px;
+    white-space: normal;
+    border: 0;
+  }
+  .lab-menu button.active { background: var(--ink); color: var(--paper); }
+  .lab-menu button.active span { color: #e0907e; }
+
+  .site-header nav a { min-height: 44px; }
+  .segmented button, .small-button { min-height: 44px; }
+  .lab-settings input:not([type=range]), .lab-settings select,
+  .suit-label select, .code-output, .pinyin-editor textarea { font-size: 16px; }
+  .suit-label select { min-height: 44px; }
+  .output-actions button {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #c9d1bb;
+    background: #f3f5ed;
+  }
+}
+
+@media (max-width: 600px) {
+  html { scroll-padding-top: 128px; }
+  input, textarea, select { max-width: 100%; }
+  .section { padding: 44px 20px; }
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 12px 16px 0;
+    gap: 10px;
+    height: auto;
+    min-height: 0;
+  }
+  .site-header .brand { gap: 10px; font-size: 20px; }
+  .site-header .brand-seal { width: 32px; height: 36px; font-size: 23px; }
+  .site-header .brand-sub { font-size: 12px; margin-top: 4px; }
+  .site-header nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+    gap: 0;
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+  .site-header nav a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 2px;
+    font-size: 13px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .nav-poker span { display: none; }
+  .hero { padding: 20px 20px 0; }
+  .hero-top { padding-bottom: 16px; }
+  .hero-top .eyebrow { font-size: 11px; letter-spacing: .1em; }
+  .hero-grid { gap: 26px; padding: 24px 0 28px; }
+  .hero-title-row { gap: 16px; }
+  .hero h1 { font-size: clamp(72px, 22vw, 102px); line-height: 1.1; }
+  .vertical-label { display: none; }
+  .hero h2 { font-size: 20px; margin: 16px 0 12px; }
+  .hero-story > p { font-size: 16px; line-height: 1.8; }
+  .hero-story > p br { display: none; }
+  .hero-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
+  .hero-actions .button, .hero-actions .text-link { min-height: 46px; font-size: 14px; padding: 10px 8px; justify-content: center; }
+  .hero-actions .link-line { display: none; }
+  .hero-foot { margin-top: 22px; flex-wrap: wrap; gap: 8px; }
+  .hero-foot-copy { margin-left: 4px; }
+  .hero-demo { transform: none; padding: 18px; box-shadow: 4px 4px 0 #ffffff10; }
+  .demo-heading { flex-wrap: wrap; gap: 8px; }
+  .hero-demo input { font-size: 21px; min-height: 48px; }
+  .hero-transcription { font-size: 13px; }
+  .hero-cards { gap: 6px; }
+  .hero-cards .playing-card { width: 45px; min-height: 78px; }
+  .hero-cards .space-card { width: 8px; min-height: 78px; }
+  .demo-bottom p { font-size: 13px; }
+  .round-link { width: 44px; height: 44px; flex-shrink: 0; }
+  .hero-strip { gap: 8px; padding: 16px 0; flex-wrap: wrap; font-size: 11px; }
+  .section-heading h2 { font-size: clamp(27px, 7.5vw, 34px); }
+  .section-heading > p, .heading-aside p { max-width: none; line-height: 1.85; }
+  .timeline button { min-height: 86px; padding: 10px 2px 14px; }
+  .timeline button span { font-size: 22px; }
+  .timeline button small { font-size: 13px; }
+  .archive-document { padding: 22px 18px; }
+  .archive-document h3 { font-size: 22px; overflow-wrap: anywhere; }
+  .archive-document p { font-size: 16px; }
+  .archive-source { min-height: 44px; display: inline-flex; align-items: center; font-size: 14px; }
+  .people-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; }
+  .people-row strong { min-width: 0; font-size: 16px; }
+  .people-row span { font-size: 14px; }
+  .segmented { display: flex; width: 100%; }
+  .segmented button { min-width: 0; flex: 1; min-height: 44px; padding: 10px 8px; font-size: 14px; white-space: normal; }
+  .book-sheet { padding: 18px 12px; }
+  .book-header { flex-wrap: wrap; font-size: 13px; }
+  .book-line { grid-template-columns: 18px repeat(8, minmax(0, 1fr)); gap: 0; }
+  .book-line button { min-width: 0; min-height: 44px; padding: 8px 0; font-size: clamp(18px, 5vw, 23px); }
+  .book-caption { font-size: 13px; }
+  .mask-input-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .mask-input-row label { min-width: 0; max-width: none; font-size: 14px; }
+  .mask-input-row input { font-size: 16px; min-height: 48px; }
+  .mask-input-row .button { font-size: 14px; min-height: 44px; }
+  .mask-table { max-width: 100%; -webkit-overflow-scrolling: touch; }
+  .mask-table th { position: sticky; left: 0; z-index: 1; padding: 12px; font-size: 13px; box-shadow: 1px 0 0 #c8cebe; }
+  .mask-result { flex-wrap: wrap; gap: 8px; font-size: 14px; }
+  .mask-result strong { overflow-wrap: anywhere; }
+  .lab-layout { gap: 16px; }
+  .lab-menu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lab-menu button span { font-size: 12px; flex-shrink: 0; }
+  .lab-workspace { padding: 18px 14px; }
+  .lab-title-row { align-items: flex-start; gap: 8px; }
+  .lab-title-row .tag-outline { font-size: 12px; white-space: normal; }
+  .lab-settings { min-width: 0; }
+  .lab-settings input:not([type=range]), .lab-settings select { max-width: none; min-height: 48px; font-size: 16px; }
+  .lab-settings input[type=range] { max-width: none; width: 100%; min-height: 36px; margin: 10px 0; }
+  .lab-settings .small-button { min-height: 44px; font-size: 14px; }
+  .input-meta { font-size: 13px; flex-wrap: wrap; gap: 6px; }
+  .viz-panel { padding: 16px 12px; }
+  .viz-heading { flex-direction: column; gap: 8px; font-size: 12px; }
+  .viz-heading .eyebrow { font-size: 12px; }
+  .lab-visual { max-width: 100%; -webkit-overflow-scrolling: touch; }
+  .flow-viz { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .flow-block { min-height: 0; padding: 14px; }
+  .flow-block small { font-size: 13px; margin-bottom: 6px; }
+  .flow-block strong { font-size: 16px; }
+  .flow-block p { font-size: 13px; }
+  .hash-grid { min-width: 0; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 3px; }
+  .hash-grid span { height: 12px; }
+  .hash-label { font-size: 13px; }
+  .lab-output-heading, .poker-code-header { flex-direction: column; align-items: stretch; gap: 10px; }
+  .output-actions { display: flex; gap: 8px; width: 100%; }
+  .output-actions button { flex: 1; min-height: 44px; padding: 10px 8px; font-size: 14px; border: 1px solid #c9d1bb; background: #f3f5ed; }
+  .code-output, .lab-text-label textarea, .pinyin-editor textarea { font-size: 16px; line-height: 1.75; min-height: 100px; }
+  .restored, .error { font-size: 14px; }
+  .poker-section .heading-aside { flex-wrap: wrap; gap: 14px; }
+  .poker-rule-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); font-size: 14px; gap: 14px 10px; }
+  .poker-rule-summary span { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .poker-workspace { padding: 16px 12px; }
+  .poker-controls { align-items: stretch; }
+  .poker-privacy { font-size: 13px; }
+  .poker-input-box textarea { min-height: 110px; font-size: 20px; }
+  .poker-input-footer { gap: 10px; align-items: center; }
+  .example-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; gap: 6px; }
+  .example-buttons button { min-width: 0; min-height: 44px; padding: 8px 3px; font-size: 13px; line-height: 1.5; border: 1px solid #c9d1bb; overflow-wrap: anywhere; }
+  .poker-transcription { flex-direction: column; align-items: stretch; gap: 10px; }
+  .poker-transcription .mono { font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .poker-transcription .small-button { margin-left: 0; align-self: flex-start; }
+  .small-button { min-height: 44px; font-size: 14px; padding: 10px 12px; }
+  .pinyin-editor { padding: 14px 10px; }
+  .cards-meta > div { flex-direction: column; align-items: stretch; gap: 6px; }
+  .switch-label { min-height: 44px; font-size: 14px; gap: 10px; }
+  .switch-label input { width: 18px; height: 18px; }
+  .suit-label { min-height: 44px; font-size: 14px; }
+  .suit-label select { flex: 1; min-width: 0; font-size: 16px; min-height: 44px; padding: 8px; }
+  .poker-cards { gap: 6px; }
+  .playing-card, .literal-card { width: 56px; min-height: 104px; }
+  .card-footer { padding: 5px; font-size: 14px; }
+  .card-number { font-size: 12px; }
+  .space-card { min-height: 104px; width: 8px; }
+  .poker-status { font-size: 13px; line-height: 1.8; }
+  .poker-code-header small { font-size: 12px; white-space: normal; }
+  .mapping-details summary, .research-note summary { min-height: 48px; font-size: 14px; }
+  .poker-mapping { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .mapping-cell { padding: 10px 2px; }
+  .mapping-cell small { font-size: 13px; }
+  .source-list > a { gap: 10px; }
+  .source-list > a div { min-width: 0; overflow-wrap: anywhere; }
+  .source-list strong { font-size: 15px; }
+  .source-list small { font-size: 12px; }
+  .source-type { flex-shrink: 0; }
+  .toast { bottom: max(20px, env(safe-area-inset-bottom)); width: max-content; max-width: calc(100% - 32px); }
+  .site-footer { padding: 28px 20px max(28px, env(safe-area-inset-bottom)); }
+}
