@@ -1,5 +1,6 @@
 import { ALPHABET, romanize, pokerEncode, pokerDecode, caesar, vigenere, railFence, randomDigits, digitMask, unicodeDigits, digitsUnicode, MORSE, morseEncode, toBase64, fromBase64, utf8, hex, sha256, aesEncrypt, aesDecrypt, rsaKeys, rsaEncrypt, rsaDecrypt } from './ciphers.js';
 import { HAND_WINDOW, sentenceHands, fanPosition, handsSVG } from './hands.js';
+import { jokerSVG } from './joker.js';
 const $ = id => document.getElementById(id);
 const E = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const short = (text, limit = 25) => [...text].length > limit ? [...text].slice(0,limit).join('') + '…' : text;
@@ -15,7 +16,7 @@ function cardHTML(card, showLetter = true, diamond = false) {
   const joker = card.kind === 'big' || card.kind === 'small';
   const suit = card.kind === 'red' ? (diamond ? '♦' : '♥') : (diamond ? '♣' : '♠');
   const name = joker ? (card.kind === 'big' ? '大王' : '小王') : `${card.kind === 'red' ? '红' : '黑'}牌 ${card.number}`;
-  return `<span class="playing-card ${card.kind} ${joker?'joker':''}" title="${name} = ${E(card.char)}" aria-label="${name}，对应 ${E(card.char)}"><span class="card-corner">${joker?'JOKER':rank(card.number)}</span><span class="card-suit">${joker?name:suit}</span><span class="card-footer"><span class="card-letter">${showLetter?E(card.char):'·'}</span><span class="card-number">${joker?'':String(card.number).padStart(2,'0')}</span></span></span>`;
+  return `<span class="playing-card ${card.kind} ${joker?'joker':''}" title="${name} = ${E(card.char)}" aria-label="${name}，对应 ${E(card.char)}"><span class="card-corner">${joker?'JOKER':rank(card.number)}</span><span class="card-suit">${joker?jokerSVG():suit}</span><span class="card-footer"><span class="card-letter">${showLetter?E(card.char):'·'}</span><span class="card-number">${joker?'':String(card.number).padStart(2,'0')}</span></span></span>`;
 }
 function renderHero() {
   const { normalized, cards } = pokerEncode($('hero-input').value);
@@ -217,7 +218,7 @@ function renderFan(visible,start,selected,interactive) {
   const show=$('show-letters').checked, diamond=$('suit-choice').value==='diamond';
   return `<div class="hand-stage ${interactive?'hand-inspect':'hand-overview'}">${visible.map((c,i)=>{
     const {position,angle,drop}=fanPosition(i,visible.length), index=start+i, tag=interactive?'button':'span';
-    return `<${tag} ${interactive?`type="button" data-hand-card="${index}" aria-pressed="${index===selected}"`:''} class="hand-card" aria-label="第 ${index+1} 张，${E(handCardName(c))}${show?`，对应 ${E(c.char)}`:''}" style="--fan-left:${50+position*50};--fan-inset:${position*126};--fan-drop:${drop};--fan-angle:${angle};--fan-order:${i+1}">${cardHTML(c,show,diamond)}<span class="hand-edge" aria-hidden="true">${show?E(c.char):'·'}<small>${c.number?String(c.number).padStart(2,'0'):c.kind==='literal'?'原文':c.kind==='big'?'大王':'小王'}</small></span></${tag}>`;
+    return `<${tag} ${interactive?`type="button" data-hand-card="${index}" aria-pressed="${index===selected}"`:''} class="hand-card" aria-label="第 ${index+1} 张，${E(handCardName(c))}${show?`，对应 ${E(c.char)}`:''}" style="--fan-left:${50+position*50};--fan-inset:${position*126};--fan-drop:${drop};--fan-angle:${angle};--fan-order:${i+1}">${cardHTML(c,show,diamond)}<span class="hand-edge" aria-hidden="true">${show?E(c.char):'·'}<small>${c.number?String(c.number).padStart(2,'0'):c.kind==='literal'?'原文':jokerSVG({width:14,height:17})}</small></span></${tag}>`;
   }).join('')}</div>`;
 }
 function renderHand(hand,handIndex) {

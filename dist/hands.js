@@ -1,3 +1,4 @@
+import { jokerSVG } from './joker.js';
 export const HAND_WINDOW = 24;
 
 // Keep every code position, including spaces; commas stay inside a sentence.
@@ -49,8 +50,10 @@ export function handsSVG(cards, { showLetters = true, diamond = false, layout = 
         if(c.kind==='space')return `<text x="${x+34}" y="${cy+58}" text-anchor="middle" fill="#909985" font-size="18">${c.token==='NL'?'↵':'·'}</text>`;
         const literal=c.kind==='literal',joker=['big','small'].includes(c.kind),red=['red','big'].includes(c.kind),color=literal?'#767d6e':red?'#b84131':'#202522';
         const rank = ({1:'A',11:'J',12:'Q',13:'K'}[c.number] || c.number);
-        const suit = literal?c.char:joker?(c.kind==='big'?'大王':'小王'):c.kind==='red'?(diamond?'♦':'♥'):(diamond?'♣':'♠');
-        return `<g transform="translate(${x},${cy}) rotate(${angle},34,203)"><rect width="68" height="116" rx="6" fill="${literal?'#e5e9dd':'#fffefa'}" stroke="#c5ceba"/><text x="6" y="17" fill="${color}" font-size="${joker?8:14}">${literal?'原文':joker?'JOKER':rank}</text><text x="6" y="37" fill="${color}" font-size="11">${showLetters?escape(c.char):'·'}</text><text x="6" y="49" fill="${color}" font-size="9">${c.number?String(c.number).padStart(2,'0'):literal?'原文':c.kind==='big'?'大王':'小王'}</text><text x="34" y="77" text-anchor="middle" fill="${color}" font-size="${joker?18:30}">${escape(suit)}</text><path d="M0 91H68" stroke="#e0e5d6"/><text x="7" y="108" fill="${color}" font-size="13">${showLetters||literal?escape(c.char):''}</text><text x="61" y="108" text-anchor="end" fill="#737f63" font-size="12">${c.number||''}</text></g>`;
+        const suit = literal?c.char:c.kind==='red'?(diamond?'♦':'♥'):(diamond?'♣':'♠');
+        const edge = joker?jokerSVG({color,x:4,y:40,width:13,height:16}):`<text x="6" y="49" fill="${color}" font-size="9">${c.number?String(c.number).padStart(2,'0'):'原文'}</text>`;
+        const face = joker?jokerSVG({color,x:15,y:32,width:45,height:54}):`<text x="34" y="77" text-anchor="middle" fill="${color}" font-size="30">${escape(suit)}</text>`;
+        return `<g transform="translate(${x},${cy}) rotate(${angle},34,203)"><rect width="68" height="116" rx="6" fill="${literal?'#e5e9dd':'#fffefa'}" stroke="#c5ceba"/><text x="6" y="17" fill="${color}" font-size="${joker?8:14}">${literal?'原文':joker?'JOKER':rank}</text><text x="6" y="37" fill="${color}" font-size="11">${showLetters?escape(c.char):'·'}</text>${edge}${face}<path d="M0 91H68" stroke="#e0e5d6"/><text x="7" y="108" fill="${color}" font-size="13">${showLetters||literal?escape(c.char):''}</text><text x="61" y="108" text-anchor="end" fill="#737f63" font-size="12">${c.number||''}</text></g>`;
       }).join('');
       return `${shapes}${windows>1&&layout!=='flat'?`<text x="480" y="${base+230}" text-anchor="middle" font-size="12" fill="#737f63">${page*HAND_WINDOW+1}–${page*HAND_WINDOW+chunk.length} / ${visible.length}</text>`:''}`;
     }).join('');
