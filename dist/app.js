@@ -61,20 +61,36 @@ const algorithms = {
 };
 let currentAlg='caesar', labEpoch=0, labTimer, labRecord, aesKey, rsaPair, rsaPromise, labCurrent='', labSource='';
 let shift=3, vigKey='HAOMI', rails=3;
+const labCompactLayout=window.matchMedia('(max-width: 900px)');
+let currentLabPanel='result';
 function keepLabViewVisible() {
+  if(!labCompactLayout.matches)return;
   const menu=document.querySelector('.lab-menu'), workspace=document.querySelector('.lab-workspace'), tabs=document.querySelector('.lab-tabs');
   const stacked=window.matchMedia('(max-width: 900px)').matches;
   const offset=stacked?parseFloat(getComputedStyle(menu).top)+menu.getBoundingClientRect().height+12:16;
   if(tabs.getBoundingClientRect().top<offset-1)window.scrollTo({top:window.scrollY+workspace.getBoundingClientRect().top-offset,behavior:'instant'});
 }
 function showLabPanel(name) {
+  currentLabPanel=name;
   document.querySelectorAll('[data-lab-panel]').forEach(button=>{
     const active=button.dataset.labPanel===name;
     button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;
-    $(`lab-panel-${button.dataset.labPanel}`).hidden=!active;
+    $(`lab-panel-${button.dataset.labPanel}`).hidden=labCompactLayout.matches&&!active;
   });
   requestAnimationFrame(keepLabViewVisible);
 }
+function syncLabLayout() {
+  document.querySelector('.lab-tabs').hidden=!labCompactLayout.matches;
+  document.querySelector('.lab-explanation').open=labCompactLayout.matches;
+  for(const name of ['result','process','principle']){
+    const panel=$(`lab-panel-${name}`);
+    panel.setAttribute('role',labCompactLayout.matches?'tabpanel':'region');
+    panel.setAttribute('aria-labelledby',labCompactLayout.matches?`lab-tab-${name}`:({result:'lab-output-label',process:'lab-process-title',principle:'lab-title'}[name]));
+  }
+  showLabPanel(currentLabPanel);
+}
+labCompactLayout.addEventListener('change',syncLabLayout);
+syncLabLayout();
 document.querySelectorAll('[data-lab-panel]').forEach(button=>{
   button.addEventListener('click',()=>showLabPanel(button.dataset.labPanel));
   button.addEventListener('keydown',event=>{
