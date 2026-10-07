@@ -2,6 +2,8 @@
 
 展示纪念版，简体中文界面，支持桌面与手机。
 
+在线访问：[豪密 · 密码纪念馆](https://cochranek.github.io/HaoMi/)。
+
 - 豪密历史时间线、人物与资料来源。
 - 书本索引、底本＋乱数两个明确标注的教学模型。
 - 凯撒、Vigenère、栅栏、一次一密、AES-GCM、RSA-OAEP、摩斯、Base64、SHA-256 九种互动实验。
@@ -33,6 +35,13 @@ npm run dev
 | `dist/vendor.LICENSE.txt` | pinyin-pro MIT 授权声明 |
 | `tests/crypto.test.mjs` | 10 项算法、Unicode 与边界验证 |
 | `.openai/hosting.json` | 静态发布配置 |
+| `.github/workflows/pages.yml` | GitHub Pages 自动构建、验证与发布 |
+
+## GitHub Pages 发布
+
+向 `main` 分支推送后，GitHub Actions 自动安装依赖、构建本地拼音字典、执行密码验证，再把 `dist` 发布到 GitHub Pages。也可以在 Actions 页手动运行 `Deploy GitHub Pages`。
+
+页面资源使用相对路径，兼容 `/HaoMi/` 仓库子路径。Pages 发布使用 HTTPS，支持浏览器中的 AES、RSA 与剪贴板功能。
 
 ## 实现参数
 
