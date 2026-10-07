@@ -23,35 +23,38 @@ export function fanPosition(index, count) {
   return { position: position * spread, angle: position * spread * 27, drop: position ** 2 * spread * 33 };
 }
 
-export function handsSVG(cards, { showLetters = true, diamond = false } = {}) {
+export function handsSVG(cards, { showLetters = true, diamond = false, layout = 'fan' } = {}) {
   const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const lines = (text, size) => Array.from({length: Math.ceil([...text].length / size)}, (_, i) => [...text].slice(i * size, (i + 1) * size).join(''));
   const hands = sentenceHands(cards).filter(hand => hand.some(c => c.kind !== 'space'));
   let y = 105;
   const panels = hands.map((hand, handIndex) => {
-    const visible = hand.filter(c => c.kind !== 'space');
+    const visible = layout === 'flat' ? hand : hand.filter(c => c.kind !== 'space');
+    const cardCount = hand.filter(c => c.kind !== 'space').length;
     const textLines = lines(hand.map(c => c.char).join('').trim(), 75);
     const codeLines = lines(hand.map(c => c.token).join(' '), 93);
-    const windows = Math.ceil(visible.length / HAND_WINDOW);
-    const height = 84 + textLines.length * 23 + windows * 250 + 28 + codeLines.length * 18;
+    const windowSize = layout === 'flat' ? 10 : HAND_WINDOW, rowHeight = layout === 'flat' ? 136 : 250;
+    const windows = Math.ceil(visible.length / windowSize);
+    const height = 84 + textLines.length * 23 + windows * rowHeight + 28 + codeLines.length * 18;
     const top = y; y += height + 20;
-    const heading = `<text x="${56}" y="${top+30}" font-size="13" fill="#b84131">第 ${String(handIndex+1).padStart(2,'0')} 句</text><text x="904" y="${top+30}" text-anchor="end" font-size="13" fill="#737f63">${visible.length} 张牌</text>`;
+    const heading = `<text x="${56}" y="${top+30}" font-size="13" fill="#b84131">第 ${String(handIndex+1).padStart(2,'0')} 句</text><text x="904" y="${top+30}" text-anchor="end" font-size="13" fill="#737f63">${cardCount} 张牌</text>`;
     const text = textLines.map((line, i) => `<text x="56" y="${top+58+i*23}" font-size="15" fill="#546247" xml:space="preserve">${escape(line)}</text>`).join('');
     const fans = Array.from({length: windows}, (_, page) => {
-      const chunk = visible.slice(page*HAND_WINDOW,(page+1)*HAND_WINDOW);
-      const base = top + 65 + textLines.length*23 + page*250;
+      const chunk = visible.slice(page*windowSize,(page+1)*windowSize);
+      const base = top + 65 + textLines.length*23 + page*rowHeight;
       const shapes = chunk.map((c,i) => {
-        const {position,angle,drop} = fanPosition(i,chunk.length);
-        const x = 480 + position*(330-126) - 34;
-        const cy = base+drop+24;
+        const {position,angle,drop} = layout === 'flat' ? {position:0,angle:0,drop:0} : fanPosition(i,chunk.length);
+        const x = layout === 'flat' ? 96+i*78 : 480 + position*(330-126) - 34;
+        const cy = base+drop+(layout==='flat'?4:24);
+        if(c.kind==='space')return `<text x="${x+34}" y="${cy+58}" text-anchor="middle" fill="#909985" font-size="18">${c.token==='NL'?'↵':'·'}</text>`;
         const literal=c.kind==='literal',joker=['big','small'].includes(c.kind),red=['red','big'].includes(c.kind),color=literal?'#767d6e':red?'#b84131':'#202522';
         const rank = ({1:'A',11:'J',12:'Q',13:'K'}[c.number] || c.number);
         const suit = literal?c.char:joker?(c.kind==='big'?'大王':'小王'):c.kind==='red'?(diamond?'♦':'♥'):(diamond?'♣':'♠');
         return `<g transform="translate(${x},${cy}) rotate(${angle},34,203)"><rect width="68" height="116" rx="6" fill="${literal?'#e5e9dd':'#fffefa'}" stroke="#c5ceba"/><text x="6" y="17" fill="${color}" font-size="${joker?8:14}">${literal?'原文':joker?'JOKER':rank}</text><text x="6" y="37" fill="${color}" font-size="11">${showLetters?escape(c.char):'·'}</text><text x="6" y="49" fill="${color}" font-size="9">${c.number?String(c.number).padStart(2,'0'):literal?'原文':c.kind==='big'?'大王':'小王'}</text><text x="34" y="77" text-anchor="middle" fill="${color}" font-size="${joker?18:30}">${escape(suit)}</text><path d="M0 91H68" stroke="#e0e5d6"/><text x="7" y="108" fill="${color}" font-size="13">${showLetters||literal?escape(c.char):''}</text><text x="61" y="108" text-anchor="end" fill="#737f63" font-size="12">${c.number||''}</text></g>`;
       }).join('');
-      return `${shapes}${windows>1?`<text x="480" y="${base+230}" text-anchor="middle" font-size="12" fill="#737f63">${page*HAND_WINDOW+1}–${page*HAND_WINDOW+chunk.length} / ${visible.length}</text>`:''}`;
+      return `${shapes}${windows>1&&layout!=='flat'?`<text x="480" y="${base+230}" text-anchor="middle" font-size="12" fill="#737f63">${page*HAND_WINDOW+1}–${page*HAND_WINDOW+chunk.length} / ${visible.length}</text>`:''}`;
     }).join('');
-    const codesTop = top+78+textLines.length*23+windows*250;
+    const codesTop = top+78+textLines.length*23+windows*rowHeight;
     const codes = codeLines.map((line,i)=>`<text x="56" y="${codesTop+i*18}" font-size="12" fill="#737f63" xml:space="preserve">${escape(line)}</text>`).join('');
     return `<rect x="32" y="${top}" width="896" height="${height}" rx="12" fill="#eef1e7" stroke="#d8ddce"/>${heading}${text}${fans}${codes}`;
   }).join('');

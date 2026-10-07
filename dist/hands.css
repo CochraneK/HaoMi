@@ -17,7 +17,7 @@
 .hand-edge { position: absolute; top: 27px; left: 6px; font: 11px/1.25 var(--mono); display: flex; flex-direction: column; gap: 2px; text-align: left; color: var(--ink); }
 .hand-card:has(.red) .hand-edge, .hand-card:has(.big) .hand-edge { color: var(--red); }
 .hand-edge small { font-size: 9px; }
-.hand-card:hover, .hand-card:focus-visible { transform: translateX(-50%) translateY(-20px) rotate(calc(var(--fan-angle) * 1deg)); z-index: 100; }
+.hand-inspect .hand-card:hover, .hand-inspect .hand-card:focus-visible { transform: translateX(-50%) translateY(-20px) rotate(calc(var(--fan-angle) * 1deg)); z-index: 100; }
 .hand-card[aria-pressed=true] { transform: translateX(-50%) translateY(-24px) rotate(calc(var(--fan-angle) * 1deg)); z-index: 99; }
 .hand-card[aria-pressed=true] .playing-card, .hand-card[aria-pressed=true] .literal-card { border-color: #849174; box-shadow: -3px 4px 12px #20252224; }
 .hand-card:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
@@ -29,6 +29,13 @@
 .hand-navigation button { min-height: 44px; padding: 8px 14px; background: #fbfcf7; border: 1px solid #cbd3bf; border-radius: 4px; }
 .hand-navigation button:disabled { opacity: .4; cursor: default; }
 .hand-help { font-size: 12px; color: var(--muted); margin: -5px 0 15px; line-height: 1.8; }
+.poker-view-controls { display: flex; width: max-content; max-width: 100%; margin: 0 0 18px; }
+.poker-view-controls button { min-height: 44px; }
+.hand-overview .hand-card { cursor: default; }
+.hand-overview .playing-card { transform: none; }
+.hand-part { margin: -10px 0 18px; text-align: center; font: 12px var(--mono); color: var(--muted); }
+.flat-stage { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; padding: 18px 0 4px; }
+.flat-stage .playing-card:hover { transform: none; }
 @media (max-width: 600px) {
   .sentence-hand { padding: 18px 10px 12px; border-radius: 9px; }
   .hand-heading { font-size: 12px; }
@@ -44,5 +51,8 @@
   .hand-navigation { gap: 8px; justify-content: space-between; }
   .hand-navigation button { font-size: 13px; padding: 8px 10px; }
   .hand-help { font-size: 13px; }
+  .poker-view-controls { width: 100%; }
+  .poker-view-controls button { flex: 1; font-size: 13px; padding: 10px 4px; white-space: normal; }
+  .flat-stage { gap: 6px; }
 }
 @media (prefers-reduced-motion: reduce) { .hand-card { transition: none; } }

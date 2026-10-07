@@ -26,6 +26,15 @@ test('fan export includes all long-sentence cards and safely escapes literal tex
   assert.ok(handsSVG(pokerEncode('A').cards,{diamond:true}).includes('♦'));
 });
 
+test('flat export keeps every card and spacing marker without rotating cards',()=>{
+  const data=pokerEncode('A B,\nC.😀');
+  const svg=handsSVG(data.cards,{layout:'flat'});
+  assert.equal((svg.match(/rotate\(0,34,203\)/g)||[]).length,data.cards.filter(c=>c.kind!=='space').length);
+  assert.equal((svg.match(/rotate\(/g)||[]).length,data.cards.filter(c=>c.kind!=='space').length);
+  assert.ok(svg.includes('>·</text>'));assert.ok(svg.includes('>↵</text>'));
+  assert.ok(svg.includes('R01 / R02 SMALL NL'));assert.ok(svg.includes('R03 BIG'));assert.ok(svg.includes('U+1F600'));
+});
+
 test('26 letters obey all red/black boundaries and both jokers',()=>{
   const {cards,serialized}=pokerEncode(ALPHABET+',.');
   assert.deepEqual(cards.slice(0,13).map(c=>c.token),Array.from({length:13},(_,i)=>`R${String(i+1).padStart(2,'0')}`));

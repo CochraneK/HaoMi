@@ -83,8 +83,14 @@ function chooseAlg(alg){
   renderLab();
 }
 function flow(blocks){return `<div class="flow-viz">${blocks.map(([label,value,note])=>`<div class="flow-block"><small>${E(label)}</small><strong>${E(value)}</strong>${note?`<p>${E(note)}</p>`:''}</div>`).join('')}</div>`;}
-function shiftViz(text,keyValues){let j=0;return `<div class="shift-grid">${[...text].slice(0,15).map(c=>{if(!/[A-Z]/.test(c))return `<div class="shift-cell separator"><b>${E(c)}</b><small>·</small><b>${E(c)}</b></div>`;const k=keyValues[j++%keyValues.length];return `<div class="shift-cell"><b>${c}</b><small>+${k}</small><b class="shift-result">${caesar(c,k)}</b></div>`;}).join('')}</div>`;}
-function railViz(text){const chars=[...text].slice(0,30);return `<div class="rail-viz">${Array.from({length:rails},(_,r)=>`<div class="rail-line">${chars.map((c,i)=>{const p=i%(2*(rails-1));const rr=p<rails?p:2*(rails-1)-p;return `<span class="${rr===r?'filled':''}">${rr===r?(c===' '?'·':E(c)):'·'}</span>`;}).join('')}</div>`).join('')}</div>`;}
+function shiftViz(text,keyValues){let j=0;return `<div class="shift-grid">${[...text].slice(0,15).map(c=>{if(!/[A-Z]/.test(c))return `<div class="shift-cell separator"><b>${E(c===' '?'·':c==='\n'?'↵':c)}</b><small>·</small><b>${E(c===' '?'·':c==='\n'?'↵':c)}</b></div>`;const k=keyValues[j++%keyValues.length];return `<div class="shift-cell"><b>${c}</b><small>+${k}</small><b class="shift-result">${caesar(c,k)}</b></div>`;}).join('')}</div>`;}
+function railViz(text){
+  const chars=[...text].slice(0,30);
+  return `<div class="rail-viz">${Array.from({length:Math.ceil(chars.length/8)},(_,block)=>{
+    const start=block*8, chunk=chars.slice(start,start+8);
+    return `<div class="rail-block" style="--rail-columns:${chunk.length}"><small>位置 ${String(start+1).padStart(2,'0')}–${String(start+chunk.length).padStart(2,'0')}</small>${Array.from({length:rails},(_,r)=>`<div class="rail-line"><b aria-label="轨道 ${r+1}">${r+1}</b>${chunk.map((c,j)=>{const i=start+j,p=i%(2*(rails-1)),rr=p<rails?p:2*(rails-1)-p;return `<span class="${rr===r?'filled':''}" ${rr===r?`aria-label="第 ${i+1} 个字符：${E(c===' '?'空格':c)}"`:''}>${rr===r?(/\s/u.test(c)?'·':E(c)):'·'}</span>`;}).join('')}</div>`).join('')}</div>`;
+  }).join('')}</div>`;
+}
 function scheduleLab(){labEpoch++;labCurrent='';labRecord=null;$('lab-copy').disabled=true;$('lab-decrypt').disabled=true;$('lab-audio').disabled=true;$('lab-restored').hidden=true;clearTimeout(labTimer);stopAudio();labTimer=setTimeout(renderLab,160);}
 async function renderLab(){
   const epoch=++labEpoch, alg=currentAlg, original=$('lab-input').value;
@@ -96,7 +102,7 @@ async function renderLab(){
     const normalized=['caesar','vigenere','rail','morse'].includes(alg)?romanize(original):original;
     if(alg==='caesar'){output=caesar(normalized,shift);visual=shiftViz(normalized,[shift]);caption='字母逐格移动 / 前 15 个字符';record={shift};}
     if(alg==='vigenere'){const k=vigKey.toUpperCase().replace(/[^A-Z]/g,'');output=vigenere(normalized,k);visual=shiftViz(normalized,[...k].map(c=>c.charCodeAt(0)-65));caption=`KEY / ${k} · 前 15 个字符`;record={key:k};}
-    if(alg==='rail'){output=railFence(normalized,rails);visual=railViz(normalized);caption=`${rails} 条轨道 / 前 30 个字符`;record={rails};}
+    if(alg==='rail'){output=railFence(normalized,rails);visual=railViz(normalized);caption=`${rails} 条轨道 / 前 30 个字符 · 按位置编号接续阅读`;record={rails};}
     if(alg==='otp'){
       const bytes=utf8(original),mask=crypto.getRandomValues(new Uint8Array(bytes.length)),ciphertext=bytes.map((b,i)=>b^mask[i]);output=hex(ciphertext);record={mask,ciphertext};
       visual=flow([['明文字节',short(hex(bytes),20),'UTF-8 编码'],['等长掩码',short(hex(mask),20),'逐字节 XOR（异或）'],['密文字节',short(output,20),'密文 XOR 掩码 = 原文']]);caption=`${bytes.length} 字节 / 十六进制`;
@@ -113,7 +119,7 @@ async function renderLab(){
       record=await rsaEncrypt(original,rsaPair);if(epoch!==labEpoch)return;output=toBase64(record.ciphertext);
       visual=flow([['发送方',short(original,18),'明文 + 接收方公钥'],['RSA-2048','OAEP / SHA-256','随机填充后再加密'],['接收方',short(output,18),'配对私钥解密']]);caption='真实运算 / Web Crypto';
     }
-    if(alg==='morse'){output=morseEncode(original);visual=`<div class="morse-viz">${[...normalized].slice(0,13).map(c=>`<div><strong>${E(MORSE[c]|| (c===' '?'/':`[${c}]`))}</strong><small>${c===' '?'空格':E(c)}</small></div>`).join('')}</div>`;caption='点 / 1 单位 · 划 / 3 单位';}
+    if(alg==='morse'){output=morseEncode(original);visual=`<div class="morse-viz">${[...normalized].slice(0,13).map(c=>`<div><strong>${E(MORSE[c]|| (c===' '||c==='\n'?'/':`[${c}]`))}</strong><small>${c===' '?'空格':c==='\n'?'换行':E(c)}</small></div>`).join('')}</div>`;caption='点 / 1 单位 · 划 / 3 单位';}
     if(alg==='base64'){const bytes=utf8(original);output=toBase64(bytes);const bitstring=[...bytes.slice(0,3)].map(b=>b.toString(2).padStart(8,'0')).join('');visual=flow([['UTF-8 字节',hex(bytes.slice(0,3)),'展示前 3 个字节'],['每组 6 位',bitstring.match(/.{1,6}/g)?.join(' ')||'', '6 位可表示 64 个值'],['Base64',output.slice(0,4),'对应前 4 个编码字符']]);caption='UTF-8 bytes / 6-bit groups';}
     if(alg==='sha'){
       const [first,second]=await Promise.all([sha256(original),sha256(original+'.')]);if(epoch!==labEpoch)return;output=hex(first);
@@ -154,7 +160,7 @@ $('lab-audio').addEventListener('click',async()=>{
 chooseAlg('caesar');
 
 let pokerMode='encode',pokerManual=false,pokerExpanded=false,pokerResult={normalized:'',cards:[],serialized:''};
-let handSource='', pokerHands=[], handPages=new Map(), handSelections=new Map();
+let handSource='', pokerHands=[], handPages=new Map(), handSelections=new Map(), pokerView='overview';
 const handCards = hand => hand.filter(c => c.kind !== 'space');
 function handCardName(card) {
   return card.kind==='literal'?`原文 ${card.char}`:card.kind==='big'?'大王':card.kind==='small'?'小王':`${card.kind==='red'?'红':'黑'}牌 ${card.number}`;
@@ -162,20 +168,37 @@ function handCardName(card) {
 function handDetail(card,index) {
   return `第 ${index+1} 张 · ${card.token}${$('show-letters').checked?` → ${card.char}`:''}`;
 }
+function renderFan(visible,start,selected,interactive) {
+  const show=$('show-letters').checked, diamond=$('suit-choice').value==='diamond';
+  return `<div class="hand-stage ${interactive?'hand-inspect':'hand-overview'}">${visible.map((c,i)=>{
+    const {position,angle,drop}=fanPosition(i,visible.length), index=start+i, tag=interactive?'button':'span';
+    return `<${tag} ${interactive?`type="button" data-hand-card="${index}" aria-pressed="${index===selected}"`:''} class="hand-card" aria-label="第 ${index+1} 张，${E(handCardName(c))}${show?`，对应 ${E(c.char)}`:''}" style="--fan-left:${50+position*50};--fan-inset:${position*126};--fan-drop:${drop};--fan-angle:${angle};--fan-order:${i+1}">${cardHTML(c,show,diamond)}<span class="hand-edge" aria-hidden="true">${show?E(c.char):'·'}<small>${c.number?String(c.number).padStart(2,'0'):c.kind==='literal'?'原文':c.kind==='big'?'大王':'小王'}</small></span></${tag}>`;
+  }).join('')}</div>`;
+}
 function renderHand(hand,handIndex) {
   const all=handCards(hand), page=handPages.get(handIndex)||0, start=page*HAND_WINDOW, visible=all.slice(start,start+HAND_WINDOW);
-  const selected=handSelections.get(handIndex)??start+Math.floor((visible.length-1)/2);
-  handSelections.set(handIndex,selected);
-  const show=$('show-letters').checked, diamond=$('suit-choice').value==='diamond';
-  return `<section class="sentence-hand" data-hand="${handIndex}" aria-label="第 ${handIndex+1} 句手牌"><div class="hand-heading"><span>第 ${String(handIndex+1).padStart(2,'0')} 句</span><span>${all.length} 张牌${all.some(c=>c.kind==='literal')?' / 含原文标记':''}</span></div><p class="hand-text">${E(hand.map(c=>c.char).join('').trim())}</p><div class="hand-stage">${visible.map((c,i)=>{
-    const {position,angle,drop}=fanPosition(i,visible.length), index=start+i;
-    return `<button type="button" class="hand-card" data-hand-card="${index}" aria-pressed="${index===selected}" aria-label="第 ${index+1} 张，${E(handCardName(c))}${show?`，对应 ${E(c.char)}`:''}" style="--fan-left:${50+position*50};--fan-inset:${position*126};--fan-drop:${drop};--fan-angle:${angle};--fan-order:${i+1}">${cardHTML(c,show,diamond)}<span class="hand-edge" aria-hidden="true">${show?E(c.char):'·'}<small>${c.number?String(c.number).padStart(2,'0'):c.kind==='literal'?'原文':c.kind==='big'?'大王':'小王'}</small></span></button>`;
-  }).join('')}</div><div class="hand-reader"><label>逐张查看<input type="range" data-hand-reader min="${start}" max="${start+visible.length-1}" value="${selected}" aria-label="查看第 ${handIndex+1} 句的牌" aria-valuetext="${E(handDetail(all[selected],selected))}"></label><output class="hand-detail" aria-live="polite">${E(handDetail(all[selected],selected))}</output></div>${all.length>HAND_WINDOW?`<div class="hand-navigation"><button type="button" data-hand-page="${page-1}" ${page===0?'disabled':''}>前 ${HAND_WINDOW} 张</button><span>${start+1}–${start+visible.length} / ${all.length}</span><button type="button" data-hand-page="${page+1}" ${start+visible.length===all.length?'disabled':''}>后 ${HAND_WINDOW} 张</button></div>`:''}</section>`;
+  let body;
+  if(pokerView==='flat') {
+    body=`<div class="flat-stage">${hand.map(c=>cardHTML(c,$('show-letters').checked,$('suit-choice').value==='diamond')).join('')}</div>`;
+  } else if(pokerView==='overview') {
+    body=Array.from({length:Math.ceil(all.length/HAND_WINDOW)},(_,part)=>{
+      const offset=part*HAND_WINDOW, chunk=all.slice(offset,offset+HAND_WINDOW);
+      return `${renderFan(chunk,offset,null,false)}${all.length>HAND_WINDOW?`<p class="hand-part">第 ${offset+1}–${offset+chunk.length} 张 / 共 ${all.length} 张</p>`:''}`;
+    }).join('');
+  } else {
+    const selected=handSelections.get(handIndex)??start+Math.floor((visible.length-1)/2);
+    handSelections.set(handIndex,selected);
+    body=`${renderFan(visible,start,selected,true)}<div class="hand-reader"><label>逐张查看<input type="range" data-hand-reader min="${start}" max="${start+visible.length-1}" value="${selected}" aria-label="查看第 ${handIndex+1} 句的牌" aria-valuetext="${E(handDetail(all[selected],selected))}"></label><output class="hand-detail" aria-live="polite">${E(handDetail(all[selected],selected))}</output></div>${all.length>HAND_WINDOW?`<div class="hand-navigation"><button type="button" data-hand-page="${page-1}" ${page===0?'disabled':''}>前 ${HAND_WINDOW} 张</button><span>${start+1}–${start+visible.length} / ${all.length}</span><button type="button" data-hand-page="${page+1}" ${start+visible.length===all.length?'disabled':''}>后 ${HAND_WINDOW} 张</button></div>`:''}`;
+  }
+  return `<section class="sentence-hand" data-hand="${handIndex}" aria-label="第 ${handIndex+1} 句牌面"><div class="hand-heading"><span>第 ${String(handIndex+1).padStart(2,'0')} 句</span><span>${all.length} 张牌${all.some(c=>c.kind==='literal')?' / 含原文标记':''}</span></div><p class="hand-text">${E(hand.map(c=>c.char).join('').trim())}</p>${body}</section>`;
 }
 function renderHands() {
+  $('poker-cards').dataset.view=pokerView;
+  $('hand-help').textContent=({overview:'每句话一把静态手牌，完整展示；长句按顺序分段显示，无需拖动。',inspect:'点选牌面，或滑动逐张查看；切换“手牌全貌”可收回抬起的单张牌。',flat:'每张牌完整平铺，按句分组、从左到右阅读，空格和换行也保留。'})[pokerView];
   const visible=pokerExpanded?pokerHands:pokerHands.slice(0,6);
   $('poker-cards').innerHTML=visible.length?visible.map(renderHand).join(''):'<p class="empty-state">写下一句话，手牌会在这里出现。</p>';
 }
+document.querySelectorAll('[data-poker-view]').forEach(b=>b.addEventListener('click',()=>{pokerView=b.dataset.pokerView;setActive('[data-poker-view]',b);renderHands();}));
 function selectHandCard(section,index) {
   const handIndex=Number(section.dataset.hand), card=handCards(pokerHands[handIndex])[index];
   handSelections.set(handIndex,index);
@@ -233,7 +256,7 @@ $('poker-copy').addEventListener('click',()=>copy(pokerResult.serialized));
 $('poker-mapping').innerHTML=[...ALPHABET].map((c,i)=>`<div class="mapping-cell ${i<13?'red':'black'}"><strong>${c}</strong><small>${i<13?'♥':'♠'} ${i%13+1}</small></div>`).join('');
 $('poker-export').addEventListener('click',()=>{
   const cards=pokerResult.cards;if(!cards.length)return;
-  const svg=handsSVG(cards,{showLetters:$('show-letters').checked,diamond:$('suit-choice').value==='diamond'});
+  const svg=handsSVG(cards,{showLetters:$('show-letters').checked,diamond:$('suit-choice').value==='diamond',layout:pokerView==='flat'?'flat':'fan'});
   const blob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='扑克密语.svg';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('牌面已导出为 SVG');
 });
 renderPoker();

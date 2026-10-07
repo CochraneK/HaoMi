@@ -148,7 +148,7 @@
   .mask-result { flex-wrap: wrap; gap: 8px; font-size: 14px; }
   .mask-result strong { overflow-wrap: anywhere; }
   .lab-layout { gap: 16px; }
-  .lab-menu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lab-menu { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .lab-menu button span { font-size: 12px; flex-shrink: 0; }
   .lab-workspace { padding: 18px 14px; }
   .lab-title-row { align-items: flex-start; gap: 8px; }
@@ -213,4 +213,47 @@
   .source-type { flex-shrink: 0; }
   .toast { bottom: max(20px, env(safe-area-inset-bottom)); width: max-content; max-width: calc(100% - 32px); }
   .site-footer { padding: 28px 20px max(28px, env(safe-area-inset-bottom)); }
+}
+
+/* Nine choices always occupy three rows; the experiment fills the next row. */
+.lab-layout { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+.lab-menu { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 8px; border: 1px solid var(--line); }
+.menu-caption { display: none; }
+.lab-menu button { width: 100%; min-width: 0; min-height: 94px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; padding: 10px 6px; text-align: center; white-space: normal; border: 0; }
+.lab-menu button .algorithm-name { font-size: 15px; font-weight: 500; line-height: 1.5; }
+.lab-menu button span { font-size: 11px; }
+.lab-menu button small { display: block; margin: 0; font-size: 12px; }
+.lab-menu button.active { background: var(--ink); color: var(--paper); }
+.lab-menu button.active span, .lab-menu button.active small { color: #d6dacd; }
+.lab-visual { min-width: 0; overflow: visible; }
+.viz-panel { overflow: visible; }
+.viz-heading > .mono { overflow-wrap: anywhere; min-width: 0; }
+.shift-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(34px, 1fr)); gap: 8px; min-width: 0; }
+.shift-cell { min-width: 0; }
+.shift-cell b { width: 100%; min-width: 0; }
+.shift-cell.separator b { min-width: 0; }
+.morse-viz { display: grid; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr)); gap: 8px; min-width: 0; }
+.morse-viz > div { min-width: 0; padding: 10px 5px; }
+.morse-viz strong { overflow-wrap: anywhere; }
+.rail-viz { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 18px; min-width: 0; }
+.rail-block { min-width: 0; }
+.rail-block > small { display: block; margin-bottom: 9px; font: 12px var(--mono); color: var(--muted); }
+.rail-line { display: grid; grid-template-columns: 20px repeat(var(--rail-columns), minmax(0, 1fr)); gap: 3px; margin-top: 5px; }
+.rail-line b { display: grid; place-items: center; font: 11px var(--mono); color: var(--muted); }
+.rail-line span { min-width: 0; width: 100%; font-size: 13px; }
+@media (max-width: 900px) {
+  .flow-viz { grid-template-columns: minmax(0, 1fr); }
+  .hash-grid { min-width: 0; grid-template-columns: repeat(16, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .lab-menu { gap: 6px; padding: 6px; }
+  .lab-menu button { min-height: 92px; padding: 8px 3px; gap: 3px; }
+  .lab-menu button .algorithm-name { font-size: 13px; }
+  .lab-menu button small { font-size: 11px; }
+  .shift-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .shift-cell b { font-size: 18px; padding: 6px 2px; }
+  .rail-viz { grid-template-columns: minmax(0, 1fr); }
+  .rail-line span { font-size: 12px; }
+  .morse-viz { grid-template-columns: repeat(auto-fit, minmax(54px, 1fr)); }
+  .morse-viz strong { font-size: 14px; }
 }
