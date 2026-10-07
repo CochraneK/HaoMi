@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./mobile.css">
   <link rel="stylesheet" href="./hands.css">
+  <link rel="stylesheet" href="./lab.css">
   <script type="module" src="./app.js"></script>
 </head>
 <body>
@@ -51,11 +52,28 @@
   <div class="principle-footer"><span class="mono">理解密码的关键</span><p>保密不仅取决于算法，还取决于密钥如何生成、分发、使用与保管。</p></div>
 </div></section>
 <section class="section lab-section" id="laboratory">
-  <div class="section-heading"><div><span class="eyebrow red-text">03 / 密码实验室</span><h2>同一句话，<br>九种不同的变换。</h2></div><p>移动字母，打乱顺序，或者换上一把密钥。<br>把明文交给不同方法，看见它们如何工作。<br>编码、加密与哈希，也在这里分清。</p></div>
+  <div class="section-heading"><div><span class="eyebrow red-text">03 / 密码实验室</span><h2>九种不同的变换。</h2></div></div>
   <div class="lab-layout"><aside class="lab-menu" aria-label="选择密码算法"><div class="menu-caption">经典密码</div><button data-alg="caesar" class="active" aria-pressed="true"><span>01</span><strong class="algorithm-name">凯撒密码</strong><small>移位</small></button><button data-alg="vigenere" aria-pressed="false"><span>02</span><strong class="algorithm-name">维吉尼亚密码</strong><small>多表替换</small></button><button data-alg="rail" aria-pressed="false"><span>03</span><strong class="algorithm-name">栅栏密码</strong><small>换位</small></button><button data-alg="otp" aria-pressed="false"><span>04</span><strong class="algorithm-name">一次一密</strong><small>随机掩码</small></button><div class="menu-caption">现代密码</div><button data-alg="aes" aria-pressed="false"><span>05</span><strong class="algorithm-name">AES-GCM</strong><small>对称</small></button><button data-alg="rsa" aria-pressed="false"><span>06</span><strong class="algorithm-name">RSA-OAEP</strong><small>非对称</small></button><div class="menu-caption">编码与摘要</div><button data-alg="morse" aria-pressed="false"><span>07</span><strong class="algorithm-name">摩斯电码</strong><small>信号编码</small></button><button data-alg="base64" aria-pressed="false"><span>08</span><strong class="algorithm-name">Base64</strong><small>数据编码</small></button><button data-alg="sha" aria-pressed="false"><span>09</span><strong class="algorithm-name">SHA-256</strong><small>哈希</small></button></aside>
-  <div class="lab-workspace"><div class="lab-title-row"><h3 id="lab-title">凯撒密码</h3><span class="tag-outline" id="lab-category">经典 · 替换密码</span></div><p id="lab-description" class="lab-description"></p><div class="lab-input-row"><label class="lab-text-label" for="lab-input">明文<textarea id="lab-input" maxlength="800" rows="2">HELLO, WORLD.</textarea></label><div class="lab-settings" id="lab-settings"></div></div><div class="input-meta"><span id="lab-input-note">中文先转拼音；标点保留。</span><span class="mono" id="lab-byte-count"></span></div>
-    <div class="viz-panel"><div class="viz-heading"><span class="eyebrow">可视化过程</span><span class="mono" id="viz-caption"></span></div><div id="lab-visual" class="lab-visual"></div></div>
-    <div class="lab-output-heading"><label for="lab-output" id="lab-output-label">密文</label><div class="output-actions"><button id="lab-copy">复制结果</button><button id="lab-decrypt">验证还原</button><button id="lab-audio" hidden>试听电码</button></div></div><textarea readonly id="lab-output" rows="3" class="code-output" aria-label="算法输出"></textarea><div id="lab-restored" class="restored" hidden></div><p id="lab-error" role="alert" class="error" hidden></p><div class="lab-insight"><span>观察</span><p id="lab-insight"></p></div>
+  <div class="lab-workspace">
+    <div class="lab-title-row"><h3 id="lab-title">凯撒密码</h3><span class="tag-outline" id="lab-category">经典 · 替换密码</span></div>
+    <div class="lab-input-row"><label class="lab-text-label" for="lab-input">明文<textarea id="lab-input" maxlength="800" rows="2">HELLO, WORLD.</textarea></label><div class="lab-settings" id="lab-settings"></div></div>
+    <div class="input-meta"><span class="mono" id="lab-byte-count"></span></div>
+    <div class="lab-tabs" role="tablist" aria-label="实验内容">
+      <button type="button" id="lab-tab-result" role="tab" data-lab-panel="result" aria-selected="true" aria-controls="lab-panel-result" tabindex="0">结果</button>
+      <button type="button" id="lab-tab-process" role="tab" data-lab-panel="process" aria-selected="false" aria-controls="lab-panel-process" tabindex="-1">过程</button>
+      <button type="button" id="lab-tab-principle" role="tab" data-lab-panel="principle" aria-selected="false" aria-controls="lab-panel-principle" tabindex="-1">原理</button>
+    </div>
+    <div class="lab-panel" id="lab-panel-result" role="tabpanel" aria-labelledby="lab-tab-result">
+      <div class="lab-output-heading"><label for="lab-output" id="lab-output-label">密文</label><div class="output-actions"><button id="lab-copy">复制结果</button><button id="lab-decrypt">验证还原</button><button id="lab-audio" hidden>试听电码</button></div></div>
+      <textarea readonly id="lab-output" rows="3" class="code-output" aria-label="算法输出"></textarea><div id="lab-restored" class="restored" hidden></div>
+    </div>
+    <div class="lab-panel" id="lab-panel-process" role="tabpanel" aria-labelledby="lab-tab-process" hidden>
+      <div class="viz-panel"><div class="viz-heading"><span class="eyebrow">可视化过程</span><span class="mono" id="viz-caption"></span></div><div id="lab-visual" class="lab-visual"></div></div>
+    </div>
+    <div class="lab-panel" id="lab-panel-principle" role="tabpanel" aria-labelledby="lab-tab-principle" hidden>
+      <p id="lab-description" class="lab-description"></p><p id="lab-input-note" class="lab-note"></p><p id="lab-setting-note" class="lab-note"></p><div class="lab-insight"><span>观察</span><p id="lab-insight"></p></div>
+    </div>
+    <p id="lab-error" role="alert" class="error" hidden></p>
   </div></div>
 </section>
 <section class="poker-section" id="poker"><div class="section inner-section">

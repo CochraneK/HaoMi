@@ -1,0 +1,67 @@
+/* Keep selection, input and the chosen view close together. */
+.lab-section { --lab-menu-top: 16px; --lab-menu-height: 153px; }
+.lab-section .section-heading { margin-bottom: 22px; }
+.lab-section .section-heading h2 { margin: 10px 0 0; }
+.lab-layout { grid-template-columns: 280px minmax(0, 1fr); gap: 22px; align-items: start; }
+.lab-menu { position: sticky; top: var(--lab-menu-top); background: var(--paper); align-self: start; z-index: 10; }
+.lab-menu button { min-height: 62px; padding: 8px 4px; }
+.lab-menu button span, .lab-menu button small { display: none; }
+.lab-menu button .algorithm-name { font-size: 13px; }
+.lab-workspace { padding: 22px; }
+.lab-title-row { margin-bottom: 16px; }
+.lab-input-row { align-items: center; }
+.lab-text-label textarea { min-height: 68px; margin-top: 5px; padding: 8px 10px; line-height: 1.5; }
+.lab-settings .setting-small { display: none; }
+.lab-settings { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: center; }
+.lab-settings input:not([type=range]), .lab-settings select, .lab-settings .small-button { margin: 0; min-height: 44px; }
+.lab-settings input[type=range] { margin: 0; min-height: 44px; }
+.lab-settings input[type=range], .lab-settings input:not([type=range]), .lab-settings select { max-width: none; }
+.input-meta { justify-content: flex-end; margin-top: 5px; font-size: 11px; }
+.lab-tabs { position: sticky; top: 16px; z-index: 9; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin: 12px 0 16px; padding: 4px; border: 1px solid var(--line); background: #edf0e6; }
+.lab-tabs button { min-height: 44px; background: none; font-size: 14px; }
+.lab-tabs button[aria-selected=true] { background: #fcfcf8; color: var(--red); box-shadow: 0 1px 3px #20252214; }
+.lab-tabs button:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+.lab-panel { min-width: 0; }
+.lab-panel .viz-panel { margin: 0; min-height: 0; padding: 14px 12px; }
+.lab-panel .viz-heading { margin-bottom: 12px; gap: 6px; }
+.lab-panel .lab-description { margin: 0 0 12px; }
+.lab-panel .lab-insight { margin-top: 14px; padding-top: 14px; }
+.lab-note { font-size: 13px; color: var(--muted); line-height: 1.8; margin-top: 8px; }
+.lab-note:empty { display: none; }
+.lab-output-heading { flex-direction: row; align-items: center; gap: 8px; }
+.lab-output-heading > label { flex-shrink: 0; }
+.lab-output-heading .output-actions { width: auto; flex: 1; justify-content: flex-end; gap: 6px; }
+.lab-output-heading .output-actions button { font-size: 13px; padding: 8px; min-height: 44px; }
+.lab-panel .code-output { min-height: 88px; height: 88px; padding: 8px 10px; line-height: 1.5; }
+@media (max-width: 900px) {
+  .lab-section { --lab-menu-top: 12px; }
+  .lab-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .lab-menu { padding: 6px; gap: 4px; }
+  .lab-tabs { top: calc(var(--lab-menu-top) + var(--lab-menu-height) + 8px); }
+  .lab-menu button { min-height: 48px; }
+  .lab-input-row { gap: 8px; }
+  .lab-settings { width: 100%; max-width: none; min-width: 0; }
+}
+@media (max-width: 600px) {
+  .lab-section { --lab-menu-top: 128px; padding: 28px 20px; }
+  .lab-section .section-heading { margin-bottom: 14px; }
+  .lab-section .section-heading h2 { font-size: 26px; line-height: 1.3; margin-top: 8px; }
+  .lab-menu button { min-height: 44px; padding: 6px 3px; }
+  .lab-menu button .algorithm-name { font-size: 13px; line-height: 1.5; }
+  .lab-workspace { padding: 14px 12px; }
+  .lab-title-row { margin-bottom: 10px; }
+  .lab-title-row h3 { font-size: 22px; }
+  .lab-title-row .tag-outline { font-size: 11px; padding: 3px 6px; }
+  .lab-input-row { gap: 6px; }
+  .lab-text-label { font-size: 13px; }
+  .lab-text-label textarea { font-size: 16px; min-height: 64px; }
+  .lab-settings { font-size: 12px; }
+  .lab-settings label { white-space: nowrap; }
+  .lab-settings input:not([type=range]), .lab-settings select { min-height: 44px; height: 44px; padding: 6px 8px; }
+  .lab-settings .small-button { font-size: 12px; min-height: 44px; padding: 7px 8px; }
+  .setting-value { font-size: 17px; }
+  .lab-tabs { margin: 8px 0 12px; }
+  .lab-output-heading { font-size: 13px; }
+  .lab-output-heading .output-actions button { flex: 1; font-size: 12px; }
+  .lab-panel .restored { font-size: 13px; margin-top: 10px; padding: 8px 10px; }
+}

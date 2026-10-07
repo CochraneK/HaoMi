@@ -61,6 +61,32 @@ const algorithms = {
 };
 let currentAlg='caesar', labEpoch=0, labTimer, labRecord, aesKey, rsaPair, rsaPromise, labCurrent='', labSource='';
 let shift=3, vigKey='HAOMI', rails=3;
+function keepLabViewVisible() {
+  const menu=document.querySelector('.lab-menu'), workspace=document.querySelector('.lab-workspace'), tabs=document.querySelector('.lab-tabs');
+  const stacked=window.matchMedia('(max-width: 900px)').matches;
+  const offset=stacked?parseFloat(getComputedStyle(menu).top)+menu.getBoundingClientRect().height+12:16;
+  if(tabs.getBoundingClientRect().top<offset-1)window.scrollTo({top:window.scrollY+workspace.getBoundingClientRect().top-offset,behavior:'instant'});
+}
+function showLabPanel(name) {
+  document.querySelectorAll('[data-lab-panel]').forEach(button=>{
+    const active=button.dataset.labPanel===name;
+    button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;
+    $(`lab-panel-${button.dataset.labPanel}`).hidden=!active;
+  });
+  requestAnimationFrame(keepLabViewVisible);
+}
+document.querySelectorAll('[data-lab-panel]').forEach(button=>{
+  button.addEventListener('click',()=>showLabPanel(button.dataset.labPanel));
+  button.addEventListener('keydown',event=>{
+    const tabs=[...document.querySelectorAll('[data-lab-panel]')],index=tabs.indexOf(button);
+    const next=event.key==='ArrowRight'?tabs[(index+1)%tabs.length]:event.key==='ArrowLeft'?tabs[(index+tabs.length-1)%tabs.length]:event.key==='Home'?tabs[0]:event.key==='End'?tabs.at(-1):null;
+    if(next){event.preventDefault();showLabPanel(next.dataset.labPanel);next.focus();}
+  });
+});
+const labMenuObserver=new ResizeObserver(([entry])=>{
+  document.querySelector('.lab-section').style.setProperty('--lab-menu-height',`${Math.ceil(entry.target.getBoundingClientRect().height)}px`);
+});
+labMenuObserver.observe(document.querySelector('.lab-menu'));
 function settings() {
   if(currentAlg==='caesar')return `<label for="caesar-shift">字母位移 <span class="setting-value" id="shift-label">+${shift}</span></label><input id="caesar-shift" type="range" min="0" max="25" value="${shift}" aria-label="字母位移"><p class="setting-small">取值 0–25，移位后循环。</p>`;
   if(currentAlg==='vigenere')return `<label for="vigenere-key">循环密钥</label><input id="vigenere-key" value="${E(vigKey)}" maxlength="30" autocomplete="off"><p class="setting-small">只使用密钥中的英文字母。</p>`;
@@ -75,6 +101,7 @@ function settings() {
 function chooseAlg(alg){
   stopAudio();currentAlg=alg;labEpoch++;labRecord=null;
   const a=algorithms[alg];$('lab-title').textContent=a.title;$('lab-category').textContent=a.category;$('lab-description').textContent=a.desc;$('lab-input-note').textContent=a.note;$('lab-insight').textContent=a.insight;$('lab-settings').innerHTML=settings();$('lab-restored').hidden=true;$('lab-error').hidden=true;
+  $('lab-setting-note').textContent=$('lab-settings').querySelector('.setting-small')?.textContent||'';
   $('lab-output-label').textContent=['sha','morse','base64'].includes(alg)?(alg==='sha'?'消息摘要':'编码结果'):'密文';
   $('lab-decrypt').hidden=['sha','morse'].includes(alg);$('lab-audio').hidden=alg!=='morse';
   const control=$('caesar-shift')||$('vigenere-key')||$('rail-count');
@@ -94,8 +121,9 @@ function railViz(text){
 function scheduleLab(){labEpoch++;labCurrent='';labRecord=null;$('lab-copy').disabled=true;$('lab-decrypt').disabled=true;$('lab-audio').disabled=true;$('lab-restored').hidden=true;clearTimeout(labTimer);stopAudio();labTimer=setTimeout(renderLab,160);}
 async function renderLab(){
   const epoch=++labEpoch, alg=currentAlg, original=$('lab-input').value;
+  const menuRect=document.querySelector('.lab-menu').getBoundingClientRect(), keepView=menuRect.top>=0&&menuRect.bottom<=window.innerHeight;
   $('lab-byte-count').textContent=`${utf8(original).length} bytes`;$('lab-error').hidden=true;$('lab-restored').hidden=true;$('lab-decrypt').disabled=true;$('lab-copy').disabled=true;$('lab-audio').disabled=true;labRecord=null;labCurrent='';
-  if(!original){$('lab-output').value='';$('lab-visual').innerHTML='<p class="empty-state">输入一句话，观察它的变化。</p>';$('viz-caption').textContent='';return;}
+  if(!original){$('lab-output').value='';$('lab-visual').innerHTML='<p class="empty-state">输入一句话，观察它的变化。</p>';$('viz-caption').textContent='';if(keepView)requestAnimationFrame(keepLabViewVisible);return;}
   $('lab-output').value='计算中…';
   try{
     let output='',visual='',caption='',record;
@@ -129,6 +157,7 @@ async function renderLab(){
     if(epoch!==labEpoch)return;
     labRecord=record;labSource=normalized;labCurrent=output;$('lab-output').value=output;$('lab-visual').innerHTML=visual;$('viz-caption').textContent=caption;$('lab-decrypt').disabled=false;$('lab-copy').disabled=false;$('lab-audio').disabled=false;
   }catch(error){if(epoch!==labEpoch)return;$('lab-output').value='';$('lab-visual').innerHTML='<p class="empty-state">请调整输入后再试。</p>';$('lab-error').textContent=error.message;$('lab-error').hidden=false;}
+  finally{if(epoch===labEpoch&&keepView)requestAnimationFrame(keepLabViewVisible);}
 }
 document.querySelectorAll('[data-alg]').forEach(b=>b.addEventListener('click',()=>{setActive('[data-alg]',b);chooseAlg(b.dataset.alg);}));
 $('lab-input').addEventListener('input',scheduleLab);$('lab-copy').addEventListener('click',()=>copy(labCurrent));
