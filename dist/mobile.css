@@ -1,4 +1,19 @@
 /* Keep wide-screen styling intact; reflow the exhibit for touch screens. */
+#mask-table { overflow: visible; }
+.mask-code-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 16px; }
+.mask-code-grid table { width: 100%; table-layout: fixed; }
+#mask-table .mask-code-grid th, #mask-table .mask-code-grid td { min-width: 0; width: auto; padding: 8px 3px; font: 12px/1.5 var(--mono); text-align: center; color: var(--ink); font-weight: 400; background: none; }
+#mask-table .mask-code-grid th { position: static; box-shadow: none; }
+#mask-table .mask-code-grid thead th { font: 12px/1.5 var(--sans); color: var(--muted); }
+#mask-table .mask-code-grid th:first-child { width: 40px; }
+#mask-table .mask-code-grid tbody th { font-size: 18px; }
+#mask-table .mask-code-grid td:last-child { color: var(--red); }
+.skip-link { z-index: 40; }
+button:disabled { cursor: default; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
 @media (max-width: 900px) {
   .hero-grid,
   .archive-grid,

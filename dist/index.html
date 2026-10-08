@@ -6,11 +6,11 @@
   <meta name="description" content="走进豪密的历史，亲手体验经典与现代密码，再用扑克牌写下你的密语。附史料来源与互动教学演示。">
   <title>豪密 · 密码纪念馆</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./style.css">
-  <link rel="stylesheet" href="./mobile.css">
-  <link rel="stylesheet" href="./hands.css">
-  <link rel="stylesheet" href="./lab.css">
-  <script type="module" src="./app.js"></script>
+  <link rel="stylesheet" href="./style.css?v=20261008-ui">
+  <link rel="stylesheet" href="./mobile.css?v=20261008-ui">
+  <link rel="stylesheet" href="./hands.css?v=20261008-ui">
+  <link rel="stylesheet" href="./lab.css?v=20261008-ui">
+  <script type="module" src="./app.js?v=20261008-ui"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">跳到正文</a>
@@ -19,7 +19,7 @@
   <nav aria-label="主导航"><a href="#history">历史档案</a><a href="#principle">豪密教学</a><a href="#laboratory">密语工具</a><a href="#poker" class="nav-poker">扑克密语 <span>♠</span></a></nav>
   <span class="header-edition">数字纪念版 · 2026</span>
 </header>
-<main id="main">
+<main id="main" tabindex="-1">
 <section class="hero" id="home">
   <div class="hero-top"><span class="eyebrow"><span class="tiny-square"></span> 特别展览 / THE CIPHER ARCHIVE</span><span class="mono">SHANGHAI · 1931</span></div>
   <div class="hero-grid">
@@ -53,7 +53,7 @@
 </div></section>
 <section class="section lab-section" id="laboratory">
   <div class="section-heading"><div><span class="eyebrow red-text">03 / 密语工具</span><h2>从豪密到现代密码。</h2></div></div>
-  <div class="lab-layout"><aside class="lab-menu" aria-label="选择密码算法"><button data-alg="haomi" class="active" aria-pressed="true"><span>01</span><strong class="algorithm-name">豪密思路</strong><small>数字密语</small></button><div class="menu-caption">经典密码</div><button data-alg="caesar" aria-pressed="false"><span>02</span><strong class="algorithm-name">凯撒密码</strong><small>移位</small></button><button data-alg="vigenere" aria-pressed="false"><span>03</span><strong class="algorithm-name">维吉尼亚密码</strong><small>多表替换</small></button><button data-alg="rail" aria-pressed="false"><span>04</span><strong class="algorithm-name">栅栏密码</strong><small>换位</small></button><button data-alg="otp" aria-pressed="false"><span>05</span><strong class="algorithm-name">一次一密</strong><small>随机掩码</small></button><div class="menu-caption">现代密码</div><button data-alg="aes" aria-pressed="false"><span>06</span><strong class="algorithm-name">AES-GCM</strong><small>对称</small></button><button data-alg="rsa" aria-pressed="false"><span>07</span><strong class="algorithm-name">RSA-OAEP</strong><small>非对称</small></button><div class="menu-caption">编码与摘要</div><button data-alg="morse" aria-pressed="false"><span>08</span><strong class="algorithm-name">摩斯电码</strong><small>信号编码</small></button><button data-alg="base64" aria-pressed="false"><span>09</span><strong class="algorithm-name">Base64</strong><small>数据编码</small></button><button data-alg="sha" aria-pressed="false"><span>10</span><strong class="algorithm-name">SHA-256</strong><small>哈希</small></button></aside>
+  <div class="lab-layout"><div class="lab-selector"><button type="button" id="lab-menu-toggle" aria-expanded="false" aria-controls="lab-algorithms" aria-label="切换密码方式"><span>豪密思路</span><small>切换方式 ↓</small></button><aside id="lab-algorithms" class="lab-menu" aria-label="选择密码算法"><button data-alg="haomi" class="active" aria-pressed="true"><span>01</span><strong class="algorithm-name">豪密思路</strong><small>数字密语</small></button><div class="menu-caption">经典密码</div><button data-alg="caesar" aria-pressed="false"><span>02</span><strong class="algorithm-name">凯撒密码</strong><small>移位</small></button><button data-alg="vigenere" aria-pressed="false"><span>03</span><strong class="algorithm-name">维吉尼亚密码</strong><small>多表替换</small></button><button data-alg="rail" aria-pressed="false"><span>04</span><strong class="algorithm-name">栅栏密码</strong><small>换位</small></button><button data-alg="otp" aria-pressed="false"><span>05</span><strong class="algorithm-name">一次一密</strong><small>随机掩码</small></button><div class="menu-caption">现代密码</div><button data-alg="aes" aria-pressed="false"><span>06</span><strong class="algorithm-name">AES-GCM</strong><small>对称</small></button><button data-alg="rsa" aria-pressed="false"><span>07</span><strong class="algorithm-name">RSA-OAEP</strong><small>非对称</small></button><div class="menu-caption">编码与摘要</div><button data-alg="morse" aria-pressed="false"><span>08</span><strong class="algorithm-name">摩斯电码</strong><small>信号编码</small></button><button data-alg="base64" aria-pressed="false"><span>09</span><strong class="algorithm-name">Base64</strong><small>数据编码</small></button><button data-alg="sha" aria-pressed="false"><span>10</span><strong class="algorithm-name">SHA-256</strong><small>哈希</small></button></aside></div>
   <div class="lab-workspace" id="lab-classic" hidden>
     <div class="lab-title-row"><h3 id="lab-title">凯撒密码</h3><span class="tag-outline" id="lab-category">经典 · 替换密码</span></div>
     <div class="lab-input-row"><label class="lab-text-label" for="lab-input">明文<textarea id="lab-input" maxlength="8000" rows="2">HELLO, WORLD.</textarea></label><div class="lab-settings" id="lab-settings"></div></div>
@@ -93,7 +93,7 @@
   <div class="poker-rule-summary"><span><b class="red-text">♥ 红牌 1–13</b> A–M</span><span><b>♠ 黑牌 1–13</b> N–Z</span><span><b class="red-text">大王</b> . 句号</span><span><b>小王</b> , 逗号</span></div>
   <div class="poker-workspace"><div class="poker-controls"><div class="segmented" role="group" aria-label="扑克转换方向"><button data-poker-mode="encode" class="active" aria-pressed="true">文字转扑克</button><button data-poker-mode="decode" aria-pressed="false">数字码解读</button></div><div class="poker-privacy">输入在当前浏览器内转换</div></div>
   <div class="poker-input-box"><label for="poker-input" id="poker-input-label">输入英文、中文，或两者混合</label><textarea id="poker-input" rows="2" maxlength="600">你好，世界。Hello, world.</textarea><div class="poker-input-footer"><div class="example-buttons"><span>试一句</span><button data-poker-example="山河无恙，岁月长安。">山河无恙</button><button data-poker-example="Hello, world.">Hello, world.</button><button data-poker-example="ABCDEFGHIJKLMNOPQRSTUVWXYZ,.">完整字母表</button></div><span id="poker-count" class="mono"></span></div></div>
-  <div class="poker-transcription"><span id="poker-transcription-label">拼音 / 字母序列</span><span id="poker-normalized" class="mono"></span><button id="poker-edit" class="small-button">校正拼音</button></div><div id="pinyin-editor" class="pinyin-editor" hidden><label for="pinyin-input">直接修改下列字母序列（可校正姓名和多音字）</label><textarea id="pinyin-input" rows="2" maxlength="1800"></textarea><button id="pinyin-reset" class="small-button">恢复自动拼音</button></div>
+  <div class="poker-transcription"><span id="poker-transcription-label">拼音 / 字母序列</span><span id="poker-normalized" class="mono"></span><button id="poker-edit" class="small-button">校正拼音</button></div><div id="pinyin-editor" class="pinyin-editor" hidden><label for="pinyin-input">直接修改下列字母序列（可校正姓名和多音字）</label><textarea id="pinyin-input" rows="2" maxlength="4800"></textarea><button id="pinyin-reset" class="small-button">恢复自动拼音</button></div>
   <div class="cards-meta"><span>一句话，一把牌</span><div><label class="switch-label"><input type="checkbox" id="show-letters" checked> 显示对应字母</label><label class="suit-label">花色<select id="suit-choice"><option value="heart">红桃 / 黑桃</option><option value="diamond">方块 / 梅花</option></select></label></div></div><div class="poker-view-controls segmented" aria-label="牌面展示方式"><button type="button" data-poker-view="overview" class="active" aria-pressed="true">手牌全貌</button><button type="button" data-poker-view="inspect" aria-pressed="false">逐张查看</button><button type="button" data-poker-view="flat" aria-pressed="false">平铺序列</button></div><p id="hand-help" class="hand-help">每句话一把静态手牌，完整展示；切换“逐张查看”可抬起单张牌，或用“平铺序列”看清每张牌。</p><div id="poker-cards" class="poker-cards" aria-label="按句分组的扇形手牌"></div><button id="poker-more" class="small-button" hidden>展开全部牌面</button><p id="poker-status" class="poker-status" role="status"></p><p id="poker-error" class="error" role="alert" hidden></p>
   <div class="poker-code-header"><label for="poker-code">对应数字码 <small>R 红 · B 黑 · BIG 大王 · SMALL 小王</small></label><div class="output-actions"><button id="poker-copy">复制数字码</button><button id="poker-export">导出牌面 SVG</button></div></div><textarea id="poker-code" readonly class="code-output" rows="3"></textarea><p class="poker-note">空格用 /，换行用 NL。数字、问号等规则外字符保留为灰色原文标记（U+码点），未映射成扑克牌。中文先转无声调拼音，ü 写作 V；大小写和声调不保留。反向解码得到字母或拼音，不能唯一恢复汉字。花色只是显示选择，同色牌同值。</p></div>
   <details class="mapping-details"><summary>查看完整 26 字母对照表 <span>＋</span></summary><div id="poker-mapping" class="poker-mapping"></div></details>

@@ -1,7 +1,7 @@
 import { ALPHABET, romanize, pokerEncode, pokerDecode, caesar, vigenere, railFence, randomDigits, digitMask, unicodeDigits, digitsUnicode, MORSE, morseEncode, toBase64, fromBase64, utf8, hex, sha256, aesEncrypt, aesDecrypt, rsaKeys, rsaEncrypt, rsaDecrypt } from './ciphers.js';
-import { HAND_WINDOW, sentenceHands, fanPosition, handsSVG } from './hands.js';
+import { HAND_WINDOW, sentenceHands, fanPosition, handsSVG } from './hands.js?v=20261008-ui';
 import { jokerSVG } from './joker.js';
-import { mountHaomiTool } from './haomi-tool.js';
+import { mountHaomiTool } from './haomi-tool.js?v=20261008-ui';
 const $ = id => document.getElementById(id);
 const E = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const short = (text, limit = 25) => [...text].length > limit ? [...text].slice(0,limit).join('') + '…' : text;
@@ -43,8 +43,8 @@ function renderMask() {
   const text = $('mask-input').value;
   if (!text) { $('mask-table').innerHTML='<p class="empty-state">输入文字，生成底码与乱数。</p>';$('mask-restored').textContent='';return; }
   const plain = unicodeDigits(text), mask = randomDigits(plain.length), cipher = digitMask(plain,mask);
-  const row = (label,values) => `<tr><th scope="row">${label}</th>${values.map(x=>`<td>${E(x)}</td>`).join('')}</tr>`;
-  $('mask-table').innerHTML = `<table>${row('原文',[...text])}${row('自编底码',plain.match(/.{7}/g))}${row('＋ 随机乱数',mask.match(/.{7}/g))}${row('＝ 密文（mod 10）',cipher.match(/.{7}/g))}</table>`;
+  const chars = [...text];
+  $('mask-table').innerHTML = `<div class="mask-code-grid">${Array.from({length:Math.ceil(chars.length/8)},(_,block)=>`<table><thead><tr><th scope="col">原字</th><th scope="col">底码</th><th scope="col">＋ 乱数</th><th scope="col">＝ 密文</th></tr></thead><tbody>${chars.slice(block*8,block*8+8).map((c,offset)=>{const i=(block*8+offset)*7;return `<tr><th scope="row">${E(c===' '?'·':c)}</th><td>${plain.slice(i,i+7)}</td><td>${mask.slice(i,i+7)}</td><td>${cipher.slice(i,i+7)}</td></tr>`;}).join('')}</tbody></table>`).join('')}</div>`;
   $('mask-restored').textContent = digitsUnicode(digitMask(cipher,mask,true));
 }
 document.querySelectorAll('[data-model]').forEach(b=>b.addEventListener('click',()=>{setActive('[data-model]',b);$('book-model').hidden=b.dataset.model!=='book';$('mask-model').hidden=b.dataset.model!=='mask';if(b.dataset.model==='mask')renderMask();}));
@@ -82,12 +82,24 @@ function changeLabPage(page){
 $('lab-page-prev').addEventListener('click',()=>changeLabPage(labVisualPage-1));
 $('lab-page-next').addEventListener('click',()=>changeLabPage(labVisualPage+1));
 $('lab-page-number').addEventListener('change',event=>changeLabPage(Number(event.target.value)-1));
+$('lab-page-number').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();changeLabPage(Number(event.target.value)-1);}});
 const labCompactLayout=window.matchMedia('(max-width: 900px)');
+const labSelector=document.querySelector('.lab-selector'),labMenuToggle=$('lab-menu-toggle');
+function syncLabMenu(){
+  const open=labSelector.classList.contains('menu-open');
+  labMenuToggle.setAttribute('aria-expanded',String(open));
+  labMenuToggle.querySelector('span').textContent=currentAlg==='haomi'?'豪密思路':algorithms[currentAlg].title;
+  labMenuToggle.querySelector('small').textContent=open?'收起选择 ↑':'切换方式 ↓';
+  document.querySelector('.lab-menu').inert=labCompactLayout.matches&&!open;
+}
+labMenuToggle.addEventListener('click',()=>{labSelector.classList.toggle('menu-open');syncLabMenu();});
+labSelector.addEventListener('keydown',event=>{if(event.key==='Escape'){labSelector.classList.remove('menu-open');syncLabMenu();labMenuToggle.focus({preventScroll:true});}});
+document.addEventListener('click',event=>{if(!labSelector.contains(event.target)&&labSelector.classList.contains('menu-open')){labSelector.classList.remove('menu-open');syncLabMenu();}});
 let currentLabPanel='result';
 function keepLabViewVisible() {
   if(currentAlg==='haomi')return;
   if(!labCompactLayout.matches)return;
-  const menu=document.querySelector('.lab-menu'), workspace=document.querySelector('.lab-workspace'), tabs=document.querySelector('.lab-tabs');
+  const menu=labSelector, workspace=document.querySelector('.lab-workspace'), tabs=document.querySelector('.lab-tabs');
   const stacked=window.matchMedia('(max-width: 900px)').matches;
   const offset=stacked?parseFloat(getComputedStyle(menu).top)+menu.getBoundingClientRect().height+12:16;
   if(tabs.getBoundingClientRect().top<offset-1)window.scrollTo({top:window.scrollY+workspace.getBoundingClientRect().top-offset,behavior:'instant'});
@@ -102,6 +114,7 @@ function showLabPanel(name) {
   requestAnimationFrame(keepLabViewVisible);
 }
 function syncLabLayout() {
+  syncLabMenu();
   document.querySelector('.lab-tabs').hidden=!labCompactLayout.matches;
   document.querySelector('.lab-explanation').open=labCompactLayout.matches;
   for(const name of ['result','process','principle']){
@@ -129,7 +142,7 @@ document.querySelectorAll('[data-lab-panel]').forEach(button=>{
 const labMenuObserver=new ResizeObserver(([entry])=>{
   document.querySelector('.lab-section').style.setProperty('--lab-menu-height',`${Math.ceil(entry.target.getBoundingClientRect().height)}px`);
 });
-labMenuObserver.observe(document.querySelector('.lab-menu'));
+labMenuObserver.observe(labSelector);
 function settings() {
   if(currentAlg==='caesar')return `<label for="caesar-shift">字母位移 <span class="setting-value" id="shift-label">+${shift}</span></label><input id="caesar-shift" type="range" min="0" max="25" value="${shift}" aria-label="字母位移"><p class="setting-small">取值 0–25，移位后循环。</p>`;
   if(currentAlg==='vigenere')return `<label for="vigenere-key">循环密钥</label><input id="vigenere-key" value="${E(vigKey)}" maxlength="30" autocomplete="off"><p class="setting-small">只使用密钥中的英文字母。</p>`;
@@ -142,7 +155,10 @@ function settings() {
   return '<span>UTF-8 → Base64</span><p class="setting-small">64 个字符，不需要密钥。</p>';
 }
 function chooseAlg(alg){
-  stopAudio();currentAlg=alg;labEpoch++;labRecord=null;labVisualPage=0;
+  clearTimeout(labTimer);stopAudio();currentAlg=alg;labEpoch++;labRecord=null;labVisualPage=0;
+  const menuWasOpen=labSelector.classList.contains('menu-open');
+  labSelector.classList.remove('menu-open');syncLabMenu();
+  if(menuWasOpen&&labCompactLayout.matches)labMenuToggle.focus({preventScroll:true});
   $('haomi-tool').hidden=alg!=='haomi';$('lab-classic').hidden=alg==='haomi';
   if(alg==='haomi')return;
   const a=algorithms[alg];$('lab-title').textContent=a.title;$('lab-category').textContent=a.category;$('lab-description').textContent=a.desc;$('lab-input-note').textContent=a.note;$('lab-insight').textContent=a.insight;$('lab-settings').innerHTML=settings();$('lab-restored').hidden=true;$('lab-error').hidden=true;
@@ -295,7 +311,7 @@ $('poker-cards').addEventListener('input',e=>{if(e.target.matches('[data-hand-re
 function renderPoker(){
   $('poker-error').hidden=true;
   const text=$('poker-input').value;
-  $('poker-count').textContent=pokerMode==='decode'?`${textTokenCount(text)} 个码元`:`${[...text].length} / 600`;
+  $('poker-count').textContent=pokerMode==='decode'?`${textTokenCount(text)} 个码元`:`${text.length} / 600`;
   try{
     if(pokerMode==='decode'){
       const decoded=pokerDecode(text);pokerResult=pokerEncode(decoded,true);$('poker-normalized').textContent=decoded;

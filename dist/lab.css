@@ -3,7 +3,9 @@
 .lab-section .section-heading { margin-bottom: 22px; }
 .lab-section .section-heading h2 { margin: 10px 0 0; }
 .lab-layout { grid-template-columns: 280px minmax(0, 1fr); gap: 22px; align-items: start; }
-.lab-menu { position: sticky; top: var(--lab-menu-top); background: var(--paper); align-self: start; z-index: 10; }
+.lab-selector { position: sticky; top: var(--lab-menu-top); align-self: start; z-index: 10; min-width: 0; background: var(--paper); }
+.lab-menu { position: static; background: var(--paper); }
+#lab-menu-toggle { display: none; }
 .lab-menu button { min-height: 62px; padding: 8px 4px; }
 .lab-menu button span, .lab-menu button small { display: none; }
 .lab-menu button .algorithm-name { font-size: 13px; }
@@ -144,11 +146,11 @@
 #haomi-process-panel { display: flex; flex: 1; flex-direction: column; min-height: 0; }
 .haomi-process-note { flex-shrink: 0; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
 #haomi-visual { flex: 1; min-height: 0; overflow-y: auto; }
-.haomi-number-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 10px; }
-.haomi-number-row { display: grid; grid-template-columns: 24px repeat(3, minmax(0, 1fr)); gap: 3px; align-items: center; padding: 4px 0; border-bottom: 1px solid #d9dece; font: 10px var(--mono); text-align: center; }
+.haomi-number-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 10px; }
+.haomi-number-row { display: grid; grid-template-columns: 24px repeat(3, minmax(0, 1fr)); gap: 3px; align-items: center; padding: 5px 0; border-bottom: 1px solid #d9dece; font: 12px var(--mono); text-align: center; }
 .haomi-number-row b { font-size: 12px; overflow-wrap: anywhere; }
 .haomi-number-row strong { font-weight: 500; color: var(--red); }
-.haomi-number-head { font: 10px var(--sans); color: var(--muted); }
+.haomi-number-head { font: 12px var(--sans); color: var(--muted); }
 #haomi-key-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .haomi-workspace #haomi-key { flex: 1; min-height: 90px; width: 100%; margin: 0; resize: none; font: 11px/1.6 var(--mono); overflow-wrap: anywhere; }
 .haomi-key-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
@@ -157,19 +159,28 @@
 .haomi-file-button input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
 .haomi-file-button:focus-within { outline: 2px solid var(--red); }
 #haomi-key-note { margin-top: 7px; font-size: 11px; color: var(--muted); line-height: 1.6; }
-.haomi-status { font-size: 11px; line-height: 1.7; color: var(--muted); }
+.haomi-status { font-size: 12px; line-height: 1.5; color: var(--muted); }
 .haomi-status.error { color: var(--red); }
 .haomi-result-panel { display: flex; flex-direction: column; min-height: 0; }
-.haomi-workspace #haomi-output { flex: 1; height: auto; min-height: 100px; margin: 0; resize: none; font: 12px/1.8 var(--mono); }
+.haomi-workspace #haomi-output { flex: 1; height: auto; min-height: 100px; margin: 0; resize: none; font: 14px/1.8 var(--mono); }
 @media (min-width: 901px) {
+  .haomi-workspace { grid-template-rows: 40px 84px 102px 26px 334px auto; }
+  .haomi-workspace .lab-input-row { align-items: start; }
+  .haomi-workspace .lab-text-label { line-height: 1.4; }
+  .haomi-workspace .input-meta { margin: 0; align-self: start; }
   .haomi-intro { grid-column: 1 / -1; grid-row: 2; }
   .haomi-material-panel { grid-column: 1; grid-row: 5; min-height: 0; }
   .haomi-result-panel { grid-column: 2; grid-row: 5; padding-left: 20px; border-left: 1px solid var(--line); }
-  .haomi-status { grid-column: 1 / -1; grid-row: 4; align-self: start; max-width: 75%; max-height: 24px; overflow-y: auto; }
+  .haomi-status { grid-column: 1 / -1; grid-row: 4; align-self: start; padding-top: 3px; max-width: 75%; max-height: 30px; overflow-y: auto; }
   .haomi-wide .haomi-material-panel { grid-column: 1 / -1; }
   .haomi-wide .haomi-result-panel { display: none; }
 }
 @media (max-width: 900px) {
+  #lab-menu-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 48px; padding: 8px 12px; border: 1px solid var(--line); background: var(--ink); color: var(--paper); text-align: left; font-size: 14px; }
+  #lab-menu-toggle small { font-size: 12px; }
+  .lab-selector:not(.menu-open) .lab-menu { display: none; }
+  .lab-selector.menu-open .lab-menu { margin-top: 6px; max-height: min(320px, calc(100dvh - var(--lab-menu-top) - 70px)); overflow-y: auto; }
+  .haomi-workspace #haomi-key, .haomi-workspace #haomi-output, .lab-page-controls input { font-size: 16px; }
   .haomi-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .haomi-submit-area .button { min-height: 44px; }
   .haomi-workspace > .lab-title-row { margin-bottom: 0; }
