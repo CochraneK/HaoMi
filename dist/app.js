@@ -63,9 +63,10 @@ const algorithms = {
 let currentAlg='caesar', labEpoch=0, labTimer, labRecord, aesKey, rsaPair, rsaPromise, labCurrent='', labSource='';
 let shift=3, vigKey='HAOMI', rails=3;
 let labVisualPage=0;
-const labPageSizes={caesar:15,vigenere:15,rail:30,morse:13};
+const labPageSizes={caesar:48,vigenere:48,rail:64,morse:48};
+const labPageSize=alg=>labCompactLayout.matches?labPageSizes[alg]/2:labPageSizes[alg];
 function labVisualRange(text,alg){
-  const chars=[...text],size=labPageSizes[alg],pages=Math.max(1,Math.ceil(chars.length/size));
+  const chars=[...text],size=labPageSize(alg),pages=Math.max(1,Math.ceil(chars.length/size));
   labVisualPage=Math.min(labVisualPage,pages-1);
   const start=labVisualPage*size,end=Math.min(start+size,chars.length);
   $('lab-paging').hidden=pages<=1;$('lab-page-prev').disabled=labVisualPage===0;$('lab-page-next').disabled=labVisualPage===pages-1;
@@ -74,7 +75,7 @@ function labVisualRange(text,alg){
 }
 function changeLabPage(page){
   if(!labPageSizes[currentAlg])return;
-  const pages=Math.ceil([...romanize($('lab-input').value)].length/labPageSizes[currentAlg]);
+  const pages=Math.ceil([...romanize($('lab-input').value)].length/labPageSize(currentAlg));
   labVisualPage=Math.max(0,Math.min(Number.isFinite(page)?Math.trunc(page):0,Math.max(0,pages-1)));stopAudio();renderLab();
 }
 $('lab-page-prev').addEventListener('click',()=>changeLabPage(labVisualPage-1));
@@ -108,8 +109,13 @@ function syncLabLayout() {
   }
   showLabPanel(currentLabPanel);
 }
-labCompactLayout.addEventListener('change',syncLabLayout);
+labCompactLayout.addEventListener('change',()=>{syncLabLayout();labVisualPage=0;renderLab();});
 syncLabLayout();
+$('lab-expand-process').addEventListener('click',()=>{
+  const expanded=document.querySelector('.lab-workspace').classList.toggle('lab-process-wide');
+  $('lab-expand-process').setAttribute('aria-pressed',String(expanded));
+  $('lab-expand-process').textContent=expanded?'恢复并排':'展开过程';
+});
 document.querySelectorAll('[data-lab-panel]').forEach(button=>{
   button.addEventListener('click',()=>showLabPanel(button.dataset.labPanel));
   button.addEventListener('keydown',event=>{
@@ -164,8 +170,8 @@ async function renderLab(){
     let output='',visual='',caption='',record;
     const normalized=['caesar','vigenere','rail','morse'].includes(alg)?romanize(original):original;
     const range=labPageSizes[alg]?labVisualRange(normalized,alg):null;
-    if(alg==='caesar'){output=caesar(normalized,shift);visual=shiftViz(normalized,[shift],range);caption=`字母逐格移动 / ${range.label}`;record={shift};}
-    if(alg==='vigenere'){const k=vigKey.toUpperCase().replace(/[^A-Z]/g,'');output=vigenere(normalized,k);visual=shiftViz(normalized,[...k].map(c=>c.charCodeAt(0)-65),range);caption=`KEY / ${k} · ${range.label}`;record={key:k};}
+    if(alg==='caesar'){output=caesar(normalized,shift);visual=shiftViz(normalized,[shift],range);caption=`原字 + 位移 = 密字 / ${range.label}`;record={shift};}
+    if(alg==='vigenere'){const k=vigKey.toUpperCase().replace(/[^A-Z]/g,'');output=vigenere(normalized,k);visual=shiftViz(normalized,[...k].map(c=>c.charCodeAt(0)-65),range);caption=`原字 + 位移 = 密字 · KEY ${k} / ${range.label}`;record={key:k};}
     if(alg==='rail'){output=railFence(normalized,rails);visual=railViz(range);caption=`${rails} 条轨道 / ${range.label}`;record={rails};}
     if(alg==='otp'){
       const bytes=utf8(original),mask=crypto.getRandomValues(new Uint8Array(bytes.length)),ciphertext=bytes.map((b,i)=>b^mask[i]);output=hex(ciphertext);record={mask,ciphertext};
@@ -215,7 +221,7 @@ let audioContext,audioOscillator,audioTimeout;
 function stopAudio(){clearTimeout(audioTimeout);if(audioOscillator){try{audioOscillator.stop();}catch{}audioOscillator=null;}$('lab-audio').textContent='试听电码';}
 $('lab-audio').addEventListener('click',async()=>{
   if(audioOscillator){stopAudio();return;}
-  try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();const symbols=[...romanize($('lab-input').value)].slice(labVisualPage*labPageSizes.morse,(labVisualPage+1)*labPageSizes.morse),unit=.065;
+  try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();const size=labPageSize('morse'),symbols=[...romanize($('lab-input').value)].slice(labVisualPage*size,(labVisualPage+1)*size),unit=.065;
     const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();oscillator.type='sine';oscillator.frequency.value=600;oscillator.connect(gain);gain.connect(audioContext.destination);gain.gain.setValueAtTime(0,audioContext.currentTime);
     let t=audioContext.currentTime+.05;
     symbols.forEach((c,i)=>{if(c===' '||c==='\n'){t+=4*unit;return;}const code=MORSE[c];if(!code){t+=3*unit;return;}[...code].forEach((s,j)=>{gain.gain.setValueAtTime(.12,t);t+=(s==='.'?1:3)*unit;gain.gain.setValueAtTime(0,t);if(j<code.length-1)t+=unit;});if(i<symbols.length-1)t+=3*unit;});
