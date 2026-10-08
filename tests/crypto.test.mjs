@@ -3,13 +3,15 @@ import assert from 'node:assert/strict';
 import { ALPHABET, romanize, pokerEncode, pokerDecode, caesar, vigenere, railFence, randomDigits, digitMask, unicodeDigits, digitsUnicode, morseEncode, toBase64, fromBase64, utf8, hex, sha256, aesEncrypt, aesDecrypt, rsaKeys, rsaEncrypt, rsaDecrypt } from '../dist/ciphers.js';
 import { sentenceHands, HAND_WINDOW, handsSVG } from '../dist/hands.js';
 
-test('sentence hands keep commas and closing quotes together without losing code positions',()=>{
+test('sentence hands split at clause punctuation and keep every code position',()=>{
   const data=pokerEncode('你好，世界。Hello, world! “OK?”\nNext\nlast');
   const hands=sentenceHands(data.cards);
-  assert.deepEqual(hands.map(h=>h.map(c=>c.char).join('').trim()),['NI HAO,SHI JIE.','HELLO, WORLD!','“OK?”','NEXT','LAST']);
+  assert.deepEqual(hands.map(h=>h.map(c=>c.char).join('').trim()),['NI HAO,','SHI JIE.','HELLO,','WORLD!','“OK?”','NEXT','LAST']);
   assert.deepEqual(hands.flat(),data.cards);
   assert.equal(pokerDecode(hands.flat().map(c=>c.token).join(' ')),data.normalized);
-  for(const text of ['', 'A... B?! C', ' \n\n', 'A\nB', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(20)]){
+  const poem=pokerEncode('千山鸟飞绝，万径人踪灭');
+  assert.deepEqual(sentenceHands(poem.cards).map(h=>h.map(c=>c.char).join('').trim()),['QIAN SHAN NIAO FEI JUE,','WAN JING REN ZONG MIE']);
+  for(const text of ['', 'A... B?! C', 'A, “B,” C; D；E', 'A,, B', ' \n\n', 'A\nB', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(20)]){
     const result=pokerEncode(text);assert.deepEqual(sentenceHands(result.cards).flat(),result.cards);
   }
 });

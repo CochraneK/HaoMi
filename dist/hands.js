@@ -1,11 +1,11 @@
 import { jokerSVG } from './joker.js';
 export const HAND_WINDOW = 24;
 
-// Keep every code position, including spaces; commas stay inside a sentence.
+// Break at clause punctuation while keeping delimiters, spaces and closing quotes.
 export function sentenceHands(cards) {
   const hands = [];
   let current = [], ended = false;
-  const terminal = card => card.kind === 'big' || /[!?！？]/u.test(card.char);
+  const terminal = card => ['big', 'small'].includes(card.kind) || /[!?！？;；]/u.test(card.char);
   const closing = card => /[”’"'）)\]】》]/u.test(card.char);
   const flush = () => { if (current.length) hands.push(current); current = []; ended = false; };
   for (const card of cards) {

@@ -22,6 +22,12 @@
 .lab-tabs button[aria-selected=true] { background: #fcfcf8; color: var(--red); box-shadow: 0 1px 3px #20252214; }
 .lab-tabs button:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
 .lab-panel { min-width: 0; }
+.lab-paging { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-top: 12px; flex-shrink: 0; }
+.lab-paging > span { font-size: 11px; color: var(--muted); }
+.lab-page-controls { display: flex; align-items: center; gap: 4px; }
+.lab-page-controls button { width: 36px; min-height: 36px; border: 1px solid var(--line); background: var(--paper); font-size: 20px; }
+.lab-page-controls button:disabled { cursor: default; }
+.lab-page-controls input { width: 50px; height: 36px; border: 1px solid var(--line); background: #fcfcf8; text-align: center; font: 12px var(--mono); color: var(--ink); }
 .lab-panel .viz-panel { margin: 0; min-height: 0; padding: 14px 12px; }
 .lab-panel .viz-heading { margin-bottom: 12px; gap: 6px; }
 .lab-panel .lab-description { margin: 0 0 12px; }
@@ -86,6 +92,7 @@
 }
 @media (min-width: 1300px) {
   .shift-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .viz-panel:has(.lab-paging:not([hidden])) .shift-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
 }
 @media (min-width: 901px) and (max-width: 1150px) {
   .lab-layout { grid-template-columns: 240px minmax(0, 1fr); gap: 18px; }
@@ -96,6 +103,7 @@
   .rail-viz { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 900px) {
+  .lab-page-controls button, .lab-page-controls input { min-height: 44px; height: 44px; }
   .lab-section { --lab-menu-top: 12px; }
   .lab-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .lab-menu { padding: 6px; gap: 4px; }

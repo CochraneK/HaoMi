@@ -62,6 +62,24 @@ const algorithms = {
 };
 let currentAlg='caesar', labEpoch=0, labTimer, labRecord, aesKey, rsaPair, rsaPromise, labCurrent='', labSource='';
 let shift=3, vigKey='HAOMI', rails=3;
+let labVisualPage=0;
+const labPageSizes={caesar:15,vigenere:15,rail:30,morse:13};
+function labVisualRange(text,alg){
+  const chars=[...text],size=labPageSizes[alg],pages=Math.max(1,Math.ceil(chars.length/size));
+  labVisualPage=Math.min(labVisualPage,pages-1);
+  const start=labVisualPage*size,end=Math.min(start+size,chars.length);
+  $('lab-paging').hidden=pages<=1;$('lab-page-prev').disabled=labVisualPage===0;$('lab-page-next').disabled=labVisualPage===pages-1;
+  $('lab-page-number').value=labVisualPage+1;$('lab-page-number').max=pages;$('lab-page-range').textContent=`${start+1}–${end} / ${chars.length} 字符`;
+  return {start,end,chars:chars.slice(start,end),label:`第 ${start+1}–${end} / 共 ${chars.length} 个字符`};
+}
+function changeLabPage(page){
+  if(!labPageSizes[currentAlg])return;
+  const pages=Math.ceil([...romanize($('lab-input').value)].length/labPageSizes[currentAlg]);
+  labVisualPage=Math.max(0,Math.min(Number.isFinite(page)?Math.trunc(page):0,Math.max(0,pages-1)));stopAudio();renderLab();
+}
+$('lab-page-prev').addEventListener('click',()=>changeLabPage(labVisualPage-1));
+$('lab-page-next').addEventListener('click',()=>changeLabPage(labVisualPage+1));
+$('lab-page-number').addEventListener('change',event=>changeLabPage(Number(event.target.value)-1));
 const labCompactLayout=window.matchMedia('(max-width: 900px)');
 let currentLabPanel='result';
 function keepLabViewVisible() {
@@ -111,12 +129,12 @@ function settings() {
   if(currentAlg==='otp')return '<span>等长随机掩码</span><button class="small-button" id="lab-regenerate">重新生成掩码</button><p class="setting-small">掩码只用于本次演示。</p>';
   if(currentAlg==='aes')return '<span>256 位密钥</span><button class="small-button" id="lab-regenerate">重新生成密钥</button><p class="setting-small">密钥仅保留在本次页面中。</p>';
   if(currentAlg==='rsa')return '<span>2048 位密钥对</span><button class="small-button" id="lab-regenerate">重新生成密钥对</button><p class="setting-small">私钥仅保留在本次页面中。</p>';
-  if(currentAlg==='morse')return '<span>电码试听</span><p class="setting-small">600 Hz · 每单位 65 ms<br>试听输入的前 24 个字符。</p>';
+  if(currentAlg==='morse')return '<span>电码试听</span><p class="setting-small">600 Hz · 每单位 65 ms<br>试听当前过程段，翻页后可试听后续文字。</p>';
   if(currentAlg==='sha')return '<span>对照输入</span><p class="setting-small">原文 ＋ 一个英文句号 .</p>';
   return '<span>UTF-8 → Base64</span><p class="setting-small">64 个字符，不需要密钥。</p>';
 }
 function chooseAlg(alg){
-  stopAudio();currentAlg=alg;labEpoch++;labRecord=null;
+  stopAudio();currentAlg=alg;labEpoch++;labRecord=null;labVisualPage=0;
   const a=algorithms[alg];$('lab-title').textContent=a.title;$('lab-category').textContent=a.category;$('lab-description').textContent=a.desc;$('lab-input-note').textContent=a.note;$('lab-insight').textContent=a.insight;$('lab-settings').innerHTML=settings();$('lab-restored').hidden=true;$('lab-error').hidden=true;
   $('lab-setting-note').textContent=$('lab-settings').querySelector('.setting-small')?.textContent||'';
   $('lab-output-label').textContent=['sha','morse','base64'].includes(alg)?(alg==='sha'?'消息摘要':'编码结果'):'密文';
@@ -127,35 +145,36 @@ function chooseAlg(alg){
   renderLab();
 }
 function flow(blocks){return `<div class="flow-viz">${blocks.map(([label,value,note])=>`<div class="flow-block"><small>${E(label)}</small><strong>${E(value)}</strong>${note?`<p>${E(note)}</p>`:''}</div>`).join('')}</div>`;}
-function shiftViz(text,keyValues){let j=0;return `<div class="shift-grid">${[...text].slice(0,15).map(c=>{if(!/[A-Z]/.test(c))return `<div class="shift-cell separator"><b>${E(c===' '?'·':c==='\n'?'↵':c)}</b><small>·</small><b>${E(c===' '?'·':c==='\n'?'↵':c)}</b></div>`;const k=keyValues[j++%keyValues.length];return `<div class="shift-cell"><b>${c}</b><small>+${k}</small><b class="shift-result">${caesar(c,k)}</b></div>`;}).join('')}</div>`;}
-function railViz(text){
-  const chars=[...text].slice(0,30);
+function shiftViz(text,keyValues,range){let j=[...text].slice(0,range.start).filter(c=>/[A-Z]/.test(c)).length;return `<div class="shift-grid">${range.chars.map(c=>{if(!/[A-Z]/.test(c))return `<div class="shift-cell separator"><b>${E(c===' '?'·':c==='\n'?'↵':c)}</b><small>·</small><b>${E(c===' '?'·':c==='\n'?'↵':c)}</b></div>`;const k=keyValues[j++%keyValues.length];return `<div class="shift-cell"><b>${c}</b><small>+${k}</small><b class="shift-result">${caesar(c,k)}</b></div>`;}).join('')}</div>`;}
+function railViz(range){
+  const chars=range.chars;
   return `<div class="rail-viz">${Array.from({length:Math.ceil(chars.length/8)},(_,block)=>{
-    const start=block*8, chunk=chars.slice(start,start+8);
+    const localStart=block*8,start=range.start+localStart, chunk=chars.slice(localStart,localStart+8);
     return `<div class="rail-block" style="--rail-columns:${chunk.length}"><small>位置 ${String(start+1).padStart(2,'0')}–${String(start+chunk.length).padStart(2,'0')}</small>${Array.from({length:rails},(_,r)=>`<div class="rail-line"><b aria-label="轨道 ${r+1}">${r+1}</b>${chunk.map((c,j)=>{const i=start+j,p=i%(2*(rails-1)),rr=p<rails?p:2*(rails-1)-p;return `<span class="${rr===r?'filled':''}" ${rr===r?`aria-label="第 ${i+1} 个字符：${E(c===' '?'空格':c)}"`:''}>${rr===r?(/\s/u.test(c)?'·':E(c)):'·'}</span>`;}).join('')}</div>`).join('')}</div>`;
   }).join('')}</div>`;
 }
-function scheduleLab(){labEpoch++;labCurrent='';labRecord=null;$('lab-copy').disabled=true;$('lab-decrypt').disabled=true;$('lab-audio').disabled=true;$('lab-restored').hidden=true;clearTimeout(labTimer);stopAudio();labTimer=setTimeout(renderLab,160);}
+function scheduleLab(){labEpoch++;labVisualPage=0;$('lab-paging').hidden=true;labCurrent='';labRecord=null;$('lab-copy').disabled=true;$('lab-decrypt').disabled=true;$('lab-audio').disabled=true;$('lab-restored').hidden=true;clearTimeout(labTimer);stopAudio();labTimer=setTimeout(renderLab,160);}
 async function renderLab(){
   const epoch=++labEpoch, alg=currentAlg, original=$('lab-input').value;
   const menuRect=document.querySelector('.lab-menu').getBoundingClientRect(), keepView=menuRect.top>=0&&menuRect.bottom<=window.innerHeight;
-  $('lab-byte-count').textContent=`${utf8(original).length} bytes`;$('lab-error').hidden=true;$('lab-restored').hidden=true;$('lab-decrypt').disabled=true;$('lab-copy').disabled=true;$('lab-audio').disabled=true;labRecord=null;labCurrent='';
+  $('lab-byte-count').textContent=`${original.length} / 8000 · ${utf8(original).length} bytes${alg==='rsa'?' · RSA 上限 190 bytes':''}`;$('lab-paging').hidden=true;$('lab-error').hidden=true;$('lab-restored').hidden=true;$('lab-decrypt').disabled=true;$('lab-copy').disabled=true;$('lab-audio').disabled=true;labRecord=null;labCurrent='';
   if(!original){$('lab-output').value='';$('lab-visual').innerHTML='<p class="empty-state">输入一句话，观察它的变化。</p>';$('viz-caption').textContent='';if(keepView)requestAnimationFrame(keepLabViewVisible);return;}
   $('lab-output').value='计算中…';
   try{
     let output='',visual='',caption='',record;
     const normalized=['caesar','vigenere','rail','morse'].includes(alg)?romanize(original):original;
-    if(alg==='caesar'){output=caesar(normalized,shift);visual=shiftViz(normalized,[shift]);caption='字母逐格移动 / 前 15 个字符';record={shift};}
-    if(alg==='vigenere'){const k=vigKey.toUpperCase().replace(/[^A-Z]/g,'');output=vigenere(normalized,k);visual=shiftViz(normalized,[...k].map(c=>c.charCodeAt(0)-65));caption=`KEY / ${k} · 前 15 个字符`;record={key:k};}
-    if(alg==='rail'){output=railFence(normalized,rails);visual=railViz(normalized);caption=`${rails} 条轨道 / 前 30 个字符 · 按位置编号接续阅读`;record={rails};}
+    const range=labPageSizes[alg]?labVisualRange(normalized,alg):null;
+    if(alg==='caesar'){output=caesar(normalized,shift);visual=shiftViz(normalized,[shift],range);caption=`字母逐格移动 / ${range.label}`;record={shift};}
+    if(alg==='vigenere'){const k=vigKey.toUpperCase().replace(/[^A-Z]/g,'');output=vigenere(normalized,k);visual=shiftViz(normalized,[...k].map(c=>c.charCodeAt(0)-65),range);caption=`KEY / ${k} · ${range.label}`;record={key:k};}
+    if(alg==='rail'){output=railFence(normalized,rails);visual=railViz(range);caption=`${rails} 条轨道 / ${range.label}`;record={rails};}
     if(alg==='otp'){
       const bytes=utf8(original),mask=crypto.getRandomValues(new Uint8Array(bytes.length)),ciphertext=bytes.map((b,i)=>b^mask[i]);output=hex(ciphertext);record={mask,ciphertext};
-      visual=flow([['明文字节',short(hex(bytes),20),'UTF-8 编码'],['等长掩码',short(hex(mask),20),'逐字节 XOR（异或）'],['密文字节',short(output,20),'密文 XOR 掩码 = 原文']]);caption=`${bytes.length} 字节 / 十六进制`;
+      visual=flow([['明文字节',short(hex(bytes),20),'UTF-8 编码'],['等长掩码',short(hex(mask),20),'逐字节 XOR（异或）'],['密文字节',short(output,20),'密文 XOR 掩码 = 原文']]);caption=`全文 ${bytes.length} 字节 / 流程内容节选`;
     }
     if(alg==='aes'){
       if(!crypto.subtle)throw new Error('当前浏览器环境不支持安全密码运算；请使用 HTTPS 或本地预览地址。');
       record=await aesEncrypt(original,aesKey);if(epoch!==labEpoch)return;aesKey=record.key;output=`IV: ${hex(record.iv)}\n密文 + 128 位认证标签 (Base64):\n${toBase64(record.ciphertext)}`;
-      visual=flow([['明文',short(original,18),`${utf8(original).length} 个 UTF-8 字节`],['AES-256-GCM','256-bit KEY',`IV ${short(hex(record.iv),12)}`],['认证密文',short(toBase64(record.ciphertext),18),'用同一密钥与 IV 解密验证']]);caption='真实运算 / Web Crypto';
+      visual=flow([['明文',short(original,18),`${utf8(original).length} 个 UTF-8 字节`],['AES-256-GCM','256-bit KEY',`IV ${short(hex(record.iv),12)}`],['认证密文',short(toBase64(record.ciphertext),18),'用同一密钥与 IV 解密验证']]);caption='完整输入已加密 / 流程内容节选';
     }
     if(alg==='rsa'){
       if(!crypto.subtle)throw new Error('当前浏览器环境不支持安全密码运算；请使用 HTTPS 或本地预览地址。');
@@ -164,16 +183,16 @@ async function renderLab(){
       record=await rsaEncrypt(original,rsaPair);if(epoch!==labEpoch)return;output=toBase64(record.ciphertext);
       visual=flow([['发送方',short(original,18),'明文 + 接收方公钥'],['RSA-2048','OAEP / SHA-256','随机填充后再加密'],['接收方',short(output,18),'配对私钥解密']]);caption='真实运算 / Web Crypto';
     }
-    if(alg==='morse'){output=morseEncode(original);visual=`<div class="morse-viz">${[...normalized].slice(0,13).map(c=>`<div><strong>${E(MORSE[c]|| (c===' '||c==='\n'?'/':`[${c}]`))}</strong><small>${c===' '?'空格':c==='\n'?'换行':E(c)}</small></div>`).join('')}</div>`;caption='点 / 1 单位 · 划 / 3 单位';}
-    if(alg==='base64'){const bytes=utf8(original);output=toBase64(bytes);const bitstring=[...bytes.slice(0,3)].map(b=>b.toString(2).padStart(8,'0')).join('');visual=flow([['UTF-8 字节',hex(bytes.slice(0,3)),'展示前 3 个字节'],['每组 6 位',bitstring.match(/.{1,6}/g)?.join(' ')||'', '6 位可表示 64 个值'],['Base64',output.slice(0,4),'对应前 4 个编码字符']]);caption='UTF-8 bytes / 6-bit groups';}
+    if(alg==='morse'){output=morseEncode(original);visual=`<div class="morse-viz">${range.chars.map(c=>`<div><strong>${E(MORSE[c]|| (c===' '||c==='\n'?'/':`[${c}]`))}</strong><small>${c===' '?'空格':c==='\n'?'换行':E(c)}</small></div>`).join('')}</div>`;caption=`点 1 单位 · 划 3 单位 / ${range.label}`;}
+    if(alg==='base64'){const bytes=utf8(original);output=toBase64(bytes);const bitstring=[...bytes.slice(0,3)].map(b=>b.toString(2).padStart(8,'0')).join('');visual=flow([['UTF-8 字节',hex(bytes.slice(0,3)),'展示前 3 个字节'],['每组 6 位',bitstring.match(/.{1,6}/g)?.join(' ')||'', '6 位可表示 64 个值'],['Base64',output.slice(0,4),'对应前 4 个编码字符']]);caption='完整输入已编码 / 前 3 字节示例';}
     if(alg==='sha'){
       const [first,second]=await Promise.all([sha256(original),sha256(original+'.')]);if(epoch!==labEpoch)return;output=hex(first);
       const b1=[...first].map(x=>x.toString(2).padStart(8,'0')).join(''),b2=[...second].map(x=>x.toString(2).padStart(8,'0')).join('');let changed=0;
       visual=`<div class="hash-grid" aria-label="256 位摘要；红色表示添加句号后变化的位">${[...b1].map((b,i)=>{const different=b!==b2[i];if(different)changed++;return `<span class="${different?'changed':b==='1'?'one':''}" title="第 ${i+1} 位：${b} → ${b2[i]}"></span>`;}).join('')}</div><p class="hash-label">添加一个英文句号后，${changed} / 256 位发生改变（${(changed/256*100).toFixed(1)}%）。</p><p class="hash-label mono" style="overflow-wrap:anywhere">对照摘要：${hex(second)}</p>`;caption='每一格 / 1 bit';
     }
     if(epoch!==labEpoch)return;
-    labRecord=record;labSource=normalized;labCurrent=output;$('lab-output').value=output;$('lab-visual').innerHTML=visual;$('viz-caption').textContent=caption;$('lab-decrypt').disabled=false;$('lab-copy').disabled=false;$('lab-audio').disabled=false;
-  }catch(error){if(epoch!==labEpoch)return;$('lab-output').value='';$('lab-visual').innerHTML='<p class="empty-state">请调整输入后再试。</p>';$('lab-error').textContent=error.message;$('lab-error').hidden=false;}
+    labRecord=record;labSource=normalized;labCurrent=output;$('lab-output').value=output;$('lab-visual').innerHTML=visual;$('lab-visual').scrollTop=0;$('viz-caption').textContent=caption;$('lab-decrypt').disabled=false;$('lab-copy').disabled=false;$('lab-audio').disabled=false;
+  }catch(error){if(epoch!==labEpoch)return;$('lab-paging').hidden=true;$('lab-output').value='';$('lab-visual').innerHTML='<p class="empty-state">请调整输入后再试。</p>';$('lab-error').textContent=error.message;$('lab-error').hidden=false;}
   finally{if(epoch===labEpoch&&keepView)requestAnimationFrame(keepLabViewVisible);}
 }
 document.querySelectorAll('[data-alg]').forEach(b=>b.addEventListener('click',()=>{setActive('[data-alg]',b);chooseAlg(b.dataset.alg);}));
@@ -196,7 +215,7 @@ let audioContext,audioOscillator,audioTimeout;
 function stopAudio(){clearTimeout(audioTimeout);if(audioOscillator){try{audioOscillator.stop();}catch{}audioOscillator=null;}$('lab-audio').textContent='试听电码';}
 $('lab-audio').addEventListener('click',async()=>{
   if(audioOscillator){stopAudio();return;}
-  try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();const symbols=[...romanize($('lab-input').value)].slice(0,24),unit=.065;
+  try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();const symbols=[...romanize($('lab-input').value)].slice(labVisualPage*labPageSizes.morse,(labVisualPage+1)*labPageSizes.morse),unit=.065;
     const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();oscillator.type='sine';oscillator.frequency.value=600;oscillator.connect(gain);gain.connect(audioContext.destination);gain.gain.setValueAtTime(0,audioContext.currentTime);
     let t=audioContext.currentTime+.05;
     symbols.forEach((c,i)=>{if(c===' '||c==='\n'){t+=4*unit;return;}const code=MORSE[c];if(!code){t+=3*unit;return;}[...code].forEach((s,j)=>{gain.gain.setValueAtTime(.12,t);t+=(s==='.'?1:3)*unit;gain.gain.setValueAtTime(0,t);if(j<code.length-1)t+=unit;});if(i<symbols.length-1)t+=3*unit;});
@@ -240,7 +259,7 @@ function renderHand(hand,handIndex) {
 }
 function renderHands() {
   $('poker-cards').dataset.view=pokerView;
-  $('hand-help').textContent=({overview:'每句话一把静态手牌，完整展示；长句按顺序分段显示，无需拖动。',inspect:'点选牌面，或滑动逐张查看；切换“手牌全貌”可收回抬起的单张牌。',flat:'每张牌完整平铺，按句分组、从左到右阅读，空格和换行也保留。'})[pokerView];
+  $('hand-help').textContent=({overview:'按逗号、句号等标点与换行分组，一段一把静态手牌；长段的全部牌面按顺序展示，无需拖动。',inspect:'按标点分组，点选牌面或滑动逐张查看；切换“手牌全貌”可收回抬起的单张牌。',flat:'按逗号、句号等标点分组，每张牌完整平铺、从左到右阅读，空格和换行也保留。'})[pokerView];
   const visible=pokerExpanded?pokerHands:pokerHands.slice(0,6);
   $('poker-cards').innerHTML=visible.length?visible.map(renderHand).join(''):'<p class="empty-state">写下一句话，手牌会在这里出现。</p>';
 }
