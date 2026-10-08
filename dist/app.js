@@ -1,7 +1,14 @@
 import { ALPHABET, romanize, pokerEncode, pokerDecode, caesar, vigenere, railFence, randomDigits, digitMask, unicodeDigits, digitsUnicode, MORSE, morseEncode, toBase64, fromBase64, utf8, hex, sha256, aesEncrypt, aesDecrypt, rsaKeys, rsaEncrypt, rsaDecrypt } from './ciphers.js';
-import { HAND_WINDOW, sentenceHands, fanPosition, handsSVG } from './hands.js?v=20261008-ui2';
+import { HAND_WINDOW, sentenceHands, fanPosition, handsSVG } from './hands.js?v=20261008-ui3';
 import { jokerSVG } from './joker.js';
-import { mountHaomiTool } from './haomi-tool.js?v=20261008-ui2';
+import { mountHaomiTool } from './haomi-tool.js?v=20261008-ui3';
+// Optional fonts start after the document is ready; controls use local fallbacks first.
+window.addEventListener('load', () => {
+  const fontSheet = document.createElement('link');
+  fontSheet.rel = 'stylesheet';
+  fontSheet.href = 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap';
+  document.head.append(fontSheet);
+}, { once: true });
 const $ = id => document.getElementById(id);
 const E = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const short = (text, limit = 25) => [...text].length > limit ? [...text].slice(0,limit).join('') + '…' : text;
