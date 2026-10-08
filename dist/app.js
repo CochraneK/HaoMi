@@ -1,7 +1,7 @@
 import { ALPHABET, romanize, pokerEncode, pokerDecode, caesar, vigenere, railFence, randomDigits, digitMask, unicodeDigits, digitsUnicode, MORSE, morseEncode, toBase64, fromBase64, utf8, hex, sha256, aesEncrypt, aesDecrypt, rsaKeys, rsaEncrypt, rsaDecrypt } from './ciphers.js';
-import { HAND_WINDOW, sentenceHands, fanPosition, handsSVG } from './hands.js?v=20261008-ui';
+import { HAND_WINDOW, sentenceHands, fanPosition, handsSVG } from './hands.js?v=20261008-ui2';
 import { jokerSVG } from './joker.js';
-import { mountHaomiTool } from './haomi-tool.js?v=20261008-ui';
+import { mountHaomiTool } from './haomi-tool.js?v=20261008-ui2';
 const $ = id => document.getElementById(id);
 const E = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const short = (text, limit = 25) => [...text].length > limit ? [...text].slice(0,limit).join('') + '…' : text;
