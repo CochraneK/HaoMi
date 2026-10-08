@@ -55,7 +55,7 @@
   .lab-layout { grid-template-columns: 280px minmax(0, 1fr); gap: 28px; }
   .lab-menu { grid-template-columns: minmax(0, 1fr); padding: 10px; gap: 4px; }
   .lab-menu::before { content: '选择一种变换'; grid-column: 1 / -1; padding: 4px 6px 12px; font-size: 13px; color: var(--muted); }
-  .lab-menu button { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; min-height: 52px; padding: 10px 12px; gap: 8px; text-align: left; background: #eeeee7; transition: background .15s; }
+  .lab-menu button { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; min-height: 48px; padding: 8px 12px; gap: 8px; text-align: left; background: #eeeee7; transition: background .15s; }
   .lab-menu button:hover:not(.active) { background: #e3e6db; }
   .lab-menu button .algorithm-name { font-size: 14px; }
   .lab-menu button span { display: block; font: 10px var(--mono); color: var(--muted); }
@@ -109,6 +109,8 @@
   .rail-viz { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 900px) {
+  .lab-menu button[data-alg=haomi] { grid-column: 1 / -1; display: flex; flex-direction: row; justify-content: center; gap: 12px; }
+  .lab-menu button[data-alg=haomi] small { display: block; font-size: 11px; }
   #lab-expand-process { display: none; }
   .lab-panel .viz-heading { flex-direction: column; align-items: flex-start; }
   .lab-panel .viz-panel { display: flex; flex-direction: column; height: 340px; }
@@ -124,6 +126,60 @@
   .lab-input-row { gap: 8px; }
   .lab-settings { width: 100%; max-width: none; min-width: 0; }
   .lab-settings { min-height: 44px; }
+}
+
+/* A reusable text tool alongside the existing transformation viewers. */
+.haomi-intro { min-width: 0; }
+.haomi-intro > p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.haomi-modes { display: inline-flex; margin-top: 6px; padding: 3px; }
+.haomi-modes button { min-height: 32px; padding: 4px 16px; font-size: 13px; }
+.haomi-modes button[aria-pressed=true], .haomi-material-tabs button[aria-pressed=true] { background: var(--ink); color: var(--paper); }
+.haomi-submit-area { display: flex; flex-direction: column; gap: 4px; }
+.haomi-submit-area small { text-align: center; font-size: 11px; color: var(--muted); }
+.haomi-material-tabs { display: flex; gap: 3px; }
+.haomi-material-tabs button, #haomi-expand { padding: 4px 8px; min-height: 30px; font-size: 12px; background: #fcfcf8; border: 1px solid #cad0bf; }
+.haomi-material-panel .viz-title-row { flex-shrink: 0; margin-bottom: 8px; }
+#haomi-process-panel { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.haomi-process-note { flex-shrink: 0; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+#haomi-visual { flex: 1; min-height: 0; overflow-y: auto; }
+.haomi-number-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 10px; }
+.haomi-number-row { display: grid; grid-template-columns: 24px repeat(3, minmax(0, 1fr)); gap: 3px; align-items: center; padding: 4px 0; border-bottom: 1px solid #d9dece; font: 10px var(--mono); text-align: center; }
+.haomi-number-row b { font-size: 12px; overflow-wrap: anywhere; }
+.haomi-number-row strong { font-weight: 500; color: var(--red); }
+.haomi-number-head { font: 10px var(--sans); color: var(--muted); }
+#haomi-key-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.haomi-workspace #haomi-key { flex: 1; min-height: 90px; width: 100%; margin: 0; resize: none; font: 11px/1.6 var(--mono); overflow-wrap: anywhere; }
+.haomi-key-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.haomi-key-actions button, .haomi-file-button { background: #fcfcf8; border: 1px solid var(--line); padding: 5px 8px; min-height: 32px; font-size: 12px; cursor: pointer; }
+.haomi-key-actions #haomi-key-decrypt { background: var(--ink); color: var(--paper); }
+.haomi-file-button { position: relative; display: inline-flex; align-items: center; overflow: hidden; }
+.haomi-file-button input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.haomi-file-button:focus-within { outline: 2px solid var(--red); }
+#haomi-key-note { margin-top: 7px; font-size: 11px; color: var(--muted); line-height: 1.6; }
+.haomi-status { font-size: 11px; line-height: 1.7; color: var(--muted); }
+.haomi-status.error { color: var(--red); }
+.haomi-result-panel { display: flex; flex-direction: column; min-height: 0; }
+.haomi-workspace #haomi-output { flex: 1; height: auto; min-height: 100px; margin: 0; resize: none; font: 12px/1.8 var(--mono); }
+@media (min-width: 901px) {
+  .haomi-intro { grid-column: 1 / -1; grid-row: 2; }
+  .haomi-material-panel { grid-column: 1; grid-row: 5; min-height: 0; }
+  .haomi-result-panel { grid-column: 2; grid-row: 5; padding-left: 20px; border-left: 1px solid var(--line); }
+  .haomi-status { grid-column: 1 / -1; grid-row: 4; align-self: start; max-width: 75%; max-height: 24px; overflow-y: auto; }
+  .haomi-wide .haomi-material-panel { grid-column: 1 / -1; }
+  .haomi-wide .haomi-result-panel { display: none; }
+}
+@media (max-width: 900px) {
+  .haomi-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .haomi-workspace > .lab-title-row { margin-bottom: 0; }
+  .haomi-workspace .lab-input-row { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .haomi-modes button, .haomi-material-tabs button, .haomi-key-actions button, .haomi-file-button { min-height: 44px; }
+  .haomi-result-panel { grid-row: 6; height: 200px; }
+  .haomi-material-panel { grid-row: 7; }
+  .haomi-decrypt .haomi-material-panel { grid-row: 6; }
+  .haomi-decrypt .haomi-result-panel { grid-row: 7; }
+  .haomi-status { grid-row: 5; }
+  .haomi-workspace .input-meta { margin: 0; }
+  #haomi-expand { display: none; }
 }
 @media (max-width: 600px) {
   .lab-section { --lab-menu-top: 128px; padding: 28px 20px; }

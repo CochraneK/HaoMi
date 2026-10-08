@@ -1,6 +1,7 @@
 import { ALPHABET, romanize, pokerEncode, pokerDecode, caesar, vigenere, railFence, randomDigits, digitMask, unicodeDigits, digitsUnicode, MORSE, morseEncode, toBase64, fromBase64, utf8, hex, sha256, aesEncrypt, aesDecrypt, rsaKeys, rsaEncrypt, rsaDecrypt } from './ciphers.js';
 import { HAND_WINDOW, sentenceHands, fanPosition, handsSVG } from './hands.js';
 import { jokerSVG } from './joker.js';
+import { mountHaomiTool } from './haomi-tool.js';
 const $ = id => document.getElementById(id);
 const E = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const short = (text, limit = 25) => [...text].length > limit ? [...text].slice(0,limit).join('') + '…' : text;
@@ -84,6 +85,7 @@ $('lab-page-number').addEventListener('change',event=>changeLabPage(Number(event
 const labCompactLayout=window.matchMedia('(max-width: 900px)');
 let currentLabPanel='result';
 function keepLabViewVisible() {
+  if(currentAlg==='haomi')return;
   if(!labCompactLayout.matches)return;
   const menu=document.querySelector('.lab-menu'), workspace=document.querySelector('.lab-workspace'), tabs=document.querySelector('.lab-tabs');
   const stacked=window.matchMedia('(max-width: 900px)').matches;
@@ -141,6 +143,8 @@ function settings() {
 }
 function chooseAlg(alg){
   stopAudio();currentAlg=alg;labEpoch++;labRecord=null;labVisualPage=0;
+  $('haomi-tool').hidden=alg!=='haomi';$('lab-classic').hidden=alg==='haomi';
+  if(alg==='haomi')return;
   const a=algorithms[alg];$('lab-title').textContent=a.title;$('lab-category').textContent=a.category;$('lab-description').textContent=a.desc;$('lab-input-note').textContent=a.note;$('lab-insight').textContent=a.insight;$('lab-settings').innerHTML=settings();$('lab-restored').hidden=true;$('lab-error').hidden=true;
   $('lab-setting-note').textContent=$('lab-settings').querySelector('.setting-small')?.textContent||'';
   $('lab-output-label').textContent=['sha','morse','base64'].includes(alg)?(alg==='sha'?'消息摘要':'编码结果'):'密文';
@@ -161,6 +165,7 @@ function railViz(range){
 }
 function scheduleLab(){labEpoch++;labVisualPage=0;$('lab-paging').hidden=true;labCurrent='';labRecord=null;$('lab-copy').disabled=true;$('lab-decrypt').disabled=true;$('lab-audio').disabled=true;$('lab-restored').hidden=true;clearTimeout(labTimer);stopAudio();labTimer=setTimeout(renderLab,160);}
 async function renderLab(){
+  if(currentAlg==='haomi')return;
   const epoch=++labEpoch, alg=currentAlg, original=$('lab-input').value;
   const menuRect=document.querySelector('.lab-menu').getBoundingClientRect(), keepView=menuRect.top>=0&&menuRect.bottom<=window.innerHeight;
   $('lab-byte-count').textContent=`${original.length} / 8000 · ${utf8(original).length} bytes${alg==='rsa'?' · RSA 上限 190 bytes':''}`;$('lab-paging').hidden=true;$('lab-error').hidden=true;$('lab-restored').hidden=true;$('lab-decrypt').disabled=true;$('lab-copy').disabled=true;$('lab-audio').disabled=true;labRecord=null;labCurrent='';
@@ -228,7 +233,8 @@ $('lab-audio').addEventListener('click',async()=>{
     oscillator.start();oscillator.stop(t+.05);audioOscillator=oscillator;$('lab-audio').textContent='停止试听';audioTimeout=setTimeout(()=>{audioOscillator=null;$('lab-audio').textContent='试听电码';},(t-audioContext.currentTime+.1)*1000);
   }catch{toast('当前环境无法播放声音。');}
 });
-chooseAlg('caesar');
+mountHaomiTool({copy,toast});
+chooseAlg('haomi');
 
 let pokerMode='encode',pokerManual=false,pokerExpanded=false,pokerResult={normalized:'',cards:[],serialized:''};
 let handSource='', pokerHands=[], handPages=new Map(), handSelections=new Map(), pokerView='overview';
