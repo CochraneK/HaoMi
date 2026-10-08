@@ -36,9 +36,10 @@ export async function openHaomiMessage(cipher, keyText) {
   return { text, plain, digits, mask: key.mask };
 }
 
-export function mountHaomiTool({ copy, toast }) {
+export function mountHaomiTool({ copy }) {
   const $ = id => document.getElementById(id), E = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let mode = 'encrypt', panel = 'process', page = 0, epoch = 0, record = null, lastEncryption = null, newEncryption = false;
+  let updateTimer, composing = false;
   const drafts = { encrypt: { input: $('haomi-input').value, key: '' }, decrypt: { input: '', key: '' } };
   const phone = window.matchMedia('(max-width: 900px)');
   const size = () => phone.matches ? 16 : 32;
@@ -46,7 +47,6 @@ export function mountHaomiTool({ copy, toast }) {
   function controls() {
     const available = !!record;
     $('haomi-submit').disabled = !$('haomi-input').value || (mode === 'decrypt' && !$('haomi-key').value);
-    $('haomi-key-decrypt').disabled = $('haomi-submit').disabled;
     $('haomi-copy-output').disabled = !available;
     $('haomi-save-output').disabled = !available;
     $('haomi-copy-key').disabled = mode === 'encrypt' ? !available : !$('haomi-key').value;
@@ -76,10 +76,17 @@ export function mountHaomiTool({ copy, toast }) {
     $('haomi-visual').scrollTop = 0;
   }
   function invalidate() {
+    clearTimeout(updateTimer);
     epoch++; record = null; page = 0; $('haomi-output').value = ''; $('haomi-paging').hidden = true;
     if (mode === 'encrypt') $('haomi-key').value = '';
-    status(mode === 'encrypt' ? '输入后点击“生成密文”；每次生成新的配套乱数。' : '粘贴数字密文和配套密钥，再点击“解密文本”。');
+    status(mode === 'encrypt' ? '输入后自动生成密文，配套密钥随结果更新。' : '填好数字密文与配套密钥后，自动解密。');
     renderProcess(); controls();
+  }
+  function scheduleUpdate() {
+    invalidate();
+    if (composing || !$('haomi-input').value || (mode === 'decrypt' && !$('haomi-key').value)) return;
+    status(mode === 'encrypt' ? '正在更新密文与配套密钥…' : '正在核对密文与密钥…');
+    updateTimer = setTimeout(processInput, 180);
   }
   function switchMode(next) {
     if (next === mode) return;
@@ -90,34 +97,43 @@ export function mountHaomiTool({ copy, toast }) {
     $('haomi-input').maxLength = mode === 'encrypt' ? 8000 : 64000; $('haomi-key').readOnly = mode === 'encrypt';
     $('haomi-input-label').textContent = mode === 'encrypt' ? '需要加密的文字' : '需要解密的数字密文';
     $('haomi-output-label').textContent = mode === 'encrypt' ? '数字密文' : '还原文字';
-    $('haomi-submit').textContent = mode === 'encrypt' ? '生成密文' : '解密文本';
+    $('haomi-submit').hidden = mode === 'decrypt';
+    $('haomi-live-label').textContent = mode === 'encrypt' ? '输入即自动加密' : '填好后自动解密';
     $('haomi-key').placeholder = mode === 'encrypt' ? '生成密文后，这里会显示配套密钥。' : '在这里粘贴保存的配套密钥 JSON。';
-    $('haomi-output').placeholder = mode === 'encrypt' ? '点击生成密文后，完整结果会显示在这里。' : '解密成功后，完整原文会显示在这里。';
-    $('haomi-key-decrypt').hidden = mode !== 'decrypt';
+    $('haomi-output').placeholder = mode === 'encrypt' ? '输入文字后，完整数字密文会自动显示在这里。' : '填好密文与密钥后，完整原文会自动显示在这里。';
     $('haomi-import-label').hidden = mode !== 'decrypt'; $('haomi-save-key').hidden = mode !== 'encrypt';
     $('haomi-key-note').textContent = mode === 'encrypt' ? '复制或保存此配套密钥，解密时需要它。密文与密钥分别保存。' : '粘贴配套密钥 JSON，或导入此前保存的密钥文件。';
     document.querySelectorAll('[data-haomi-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.haomiMode === mode)));
-    invalidate(); showPanel(mode === 'encrypt' ? 'process' : 'key');
+    scheduleUpdate(); showPanel(mode === 'encrypt' ? 'process' : 'key');
   }
   document.querySelectorAll('[data-haomi-mode]').forEach(b => b.addEventListener('click', () => switchMode(b.dataset.haomiMode)));
   document.querySelectorAll('[data-haomi-panel]').forEach(b => b.addEventListener('click', () => showPanel(b.dataset.haomiPanel)));
-  $('haomi-input').addEventListener('input', invalidate);
-  $('haomi-key').addEventListener('input', invalidate);
-  $('haomi-submit').addEventListener('click', async () => {
-    const token = ++epoch; record = null; controls(); $('haomi-submit').disabled = true; $('haomi-key-decrypt').disabled = true; status('正在处理…');
+  for (const id of ['haomi-input', 'haomi-key']) {
+    $(id).addEventListener('compositionstart', () => { composing = true; invalidate(); });
+    $(id).addEventListener('compositionend', () => { composing = false; scheduleUpdate(); });
+    $(id).addEventListener('input', event => {
+      if (mode === 'encrypt') newEncryption = false;
+      if (event.isComposing) { invalidate(); return; }
+      scheduleUpdate();
+    });
+  }
+  async function processInput() {
+    clearTimeout(updateTimer);
+    if (composing || !$('haomi-input').value || (mode === 'decrypt' && !$('haomi-key').value)) return;
+    const token = ++epoch; record = null; controls(); $('haomi-submit').disabled = true; status('正在处理…');
     try {
       const result = mode === 'encrypt' ? await createHaomiMessage($('haomi-input').value) : await openHaomiMessage($('haomi-input').value, $('haomi-key').value);
       if (token !== epoch) return;
       record = result; page = 0;
       if (mode === 'encrypt') { lastEncryption = result; newEncryption = true; $('haomi-key').value = result.key; }
       $('haomi-output').value = mode === 'encrypt' ? result.cipher : result.text;
-      renderProcess(); status(mode === 'encrypt' ? `已生成 ${result.digits.length / 7} 个码组；请保存配套密钥。` : '解密成功，已核对完整原文。');
+      renderProcess(); status(mode === 'encrypt' ? `已自动生成 ${result.digits.length / 7} 个码组；配套密钥已更新。` : '自动解密成功，已核对完整原文。');
     } catch (error) {
       if (token !== epoch) return;
       $('haomi-output').value = ''; if (mode === 'encrypt') $('haomi-key').value = ''; renderProcess(); status(error.message, true);
     } finally { if (token === epoch) controls(); }
-  });
-  $('haomi-key-decrypt').addEventListener('click', () => $('haomi-submit').click());
+  }
+  $('haomi-submit').addEventListener('click', processInput);
   $('haomi-copy-output').addEventListener('click', () => copy($('haomi-output').value));
   $('haomi-copy-key').addEventListener('click', () => copy($('haomi-key').value));
   function download(text, name, type) {
@@ -133,7 +149,7 @@ export function mountHaomiTool({ copy, toast }) {
       if (file.size > 100000) throw new Error('密钥文件过大，请选择本工具导出的 JSON 密钥。');
       const text = await file.text(); readHaomiKey(text);
       if (token !== epoch || mode !== 'decrypt') return;
-      $('haomi-key').value = text; invalidate(); status('已导入配套密钥，可点击“解密文本”。');
+      $('haomi-key').value = text; scheduleUpdate();
     } catch (error) { if (token === epoch) status(error.message, true); }
     event.target.value = '';
   });
@@ -147,5 +163,5 @@ export function mountHaomiTool({ copy, toast }) {
     $('haomi-expand').textContent = wide ? '恢复并排' : '展开过程'; $('haomi-expand').setAttribute('aria-pressed', String(wide));
     if (wide) showPanel('process');
   });
-  invalidate(); showPanel(panel);
+  scheduleUpdate(); showPanel(panel);
 }
